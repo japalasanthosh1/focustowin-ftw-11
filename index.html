@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTW | Focus To Win</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
+</head>
+
+<body>
+
+    <!-- UI Overlays -->
+    <div class="preloader">
+        <div class="loader-logo">FTW.</div>
+        <div class="loader-line"></div>
+    </div>
+    <div class="scroll-progress"></div>
+
+    <!-- Fixed Navigation (Persistent) -->
+    <!-- SVG Filters (Hidden) -->
+    <svg style="display: none;">
+        <defs>
+            <filter id="liquid">
+                <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" result="warp"></feTurbulence>
+                <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="30" in="SourceGraphic" in2="warp">
+                </feDisplacementMap>
+            </filter>
+        </defs>
+    </svg>
+
+    <header class="navbar-container">
+        <nav class="island-nav">
+            <div class="logo">FTW.</div>
+            <div class="mobile-menu-btn"><span></span><span></span></div>
+            <ul class="nav-links">
+                <li><a href="#intro" class="active">Start</a></li>
+                <li><a href="#vision">Vision</a></li>
+                <li><a href="#network">Network</a></li>
+                <li><a href="#tech">Tech</a></li>
+            </ul>
+            <a href="#join" class="cta-button">Join</a>
+        </nav>
+        <div class="nav-actions right-corner">
+            <a href="login.html" class="cta-button">Login</a>
+        </div>
+    </header>
+
+    <!-- Main Scroll Container -->
+    <main class="scroll-container">
+
+        <!-- Chapter 1: Intro -->
+        <section id="intro" class="chapter full-screen">
+            <div class="bg-layer bg-1"></div>
+            <div class="content-wrapper centered">
+                <div class="hero-text">
+                    <h1 class="hero-title animate-chapter" id="dynamicHeroTitle">
+                        FOCUS<br><span class="gradient-text">TO WIN</span>
+                    </h1>
+                    <p class="hero-subtitle animate-chapter delay-1" id="dynamicHeroSubtitle">The only community that
+                        matters.</p>
+                    <div class="hero-stats animate-chapter delay-2">
+                        <!-- Stats will be dynamically loaded or hardcoded here -->
+                    </div>
+                </div>
+                <div class="scroll-indicator animate-text delay-3">
+                    <span>Scroll to Explore</span>
+                    <div class="arrow-down">↓</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 1.5: Featured Talk -->
+        <section id="featured" class="chapter full-screen">
+            <div class="content-wrapper centered">
+                <h2 class="animate-chapter">Latest <span class="gradient-text">Raw Talk</span></h2>
+                <div class="featured-video-card animate-chapter delay-1">
+                    <div class="video-container">
+                        <iframe id="dynamicYoutube" width="100%" height="100%"
+                            src="https://www.youtube-nocookie.com/embed/9VlvbpXwLJs?si=eXu0uLCMm4yohcp0&controls=1&rel=0"
+                            title="YouTube Video" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;"><button class="cta-button" id="openGalleryBtn"
+                            style="background: rgba(255,255,255,0.05); color: #fff; width: auto; padding: 10px 30px;">View
+                            All Featured Videos</button></div>
+                    <div class="video-info">
+                        <h3>Trending Raw Talk</h3>
+                        <p>Watch our featured community highlight.</p>
+                        <a id="dynamicYoutubeLink" href="https://youtu.be/9VlvbpXwLJs" target="_blank"
+                            class="cta-button">Watch on YT</a>
+                    </div>
+                </div>
+                <p class="video-disclaimer">* Disclaimer: The video above is a suggestion for gaining growth insights
+                    and was not created by us.</p>
+            </div>
+        </section>
+
+        <!-- Chapter 2: The Vision -->
+        <section id="vision" class="chapter full-screen">
+            <div class="bg-layer bg-2"></div>
+            <div class="content-wrapper split-layout">
+                <div class="text-side animate-chapter">
+                    <h2>For the <span class="gradient-text">Driven</span></h2>
+                    <p class="narrative-text">
+                        Student or Professional.<br>
+                        Dreamer or Scaler.<br>
+                        We provide the designated space to build your legacy.
+                    </p>
+                </div>
+                <div class="visual-side animate-chapter delay-1">
+                    <div class="stat-box">
+                        <span class="num">Daily</span>
+                        <span class="label">Deep Work</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="num">100%</span>
+                        <span class="label">Focus</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 3: The Network (In-Person) -->
+        <section id="network" class="chapter full-screen">
+            <div class="bg-layer bg-3"></div>
+            <div class="content-wrapper centered">
+                <h2 class="section-title animate-chapter">The <span class="gradient-text">Network</span></h2>
+                <div class="feature-showcase animate-chapter delay-1">
+                    <div class="showcase-item large">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <h3>Monthly In-Person Sessions</h3>
+                        <p>Meet top experts from leading companies. Real connections, not just LinkedIn requests.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 3.5: The Host -->
+        <section id="host" class="chapter full-screen">
+            <div class="content-wrapper split-layout">
+                <div class="host-image animate-chapter">
+                    <div class="image-frame">
+                        <img src="host-image.png" alt="Host Image" class="host-photo">
+                    </div>
+                </div>
+                <div class="host-bio animate-chapter delay-1">
+                    <h2>Meet The <span class="gradient-text">Host</span></h2>
+                    <p class="narrative-text">
+                        "I built FTW to be the bridge I never had. We don't do small talk here—we break down the
+                        blueprints of success."
+                    </p>
+                    <div class="host-meta">
+                        <span><strong>Santhosh Japala</strong></span>
+                        <span>Founder, FTW</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 3.5: Upcoming Events -->
+        <section id="events" class="chapter full-screen">
+            <div class="bg-layer bg-2"></div>
+            <div class="content-wrapper vertical-layout">
+                <h2 class="animate-chapter">Upcoming <span class="gradient-text">Experience</span></h2>
+                <div class="events-container animate-chapter delay-1" id="dynamicEventsContainer">
+                    <div style="text-align: center; color: var(--text-secondary); width: 100%; padding: 20px;">Loading
+                        events...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 4: The Tech (Edge & Domains) -->
+        <section id="tech" class="chapter full-screen">
+            <div class="bg-layer bg-4"></div>
+            <div class="content-wrapper vertical-layout">
+                <h2 class="animate-chapter">Explore <span class="gradient-text">The Edge</span></h2>
+                <!-- Doubled content for seamless loop -->
+                <div class="domains-ticker-wrapper animate-chapter delay-1">
+                    <div class="domains-ticker">
+                        <span>EDGE TECH</span> <span class="divider">•</span>
+                        <span>SOFTWARE</span> <span class="divider">•</span>
+                        <span>HARDWARE</span> <span class="divider">•</span>
+                        <span>DESIGN</span> <span class="divider">•</span>
+                        <span>CONTENT</span> <span class="divider">•</span>
+                        <span>STARTUPS</span> <span class="divider">•</span>
+                        <!-- Duplicate set -->
+                        <span>EDGE TECH</span> <span class="divider">•</span>
+                        <span>SOFTWARE</span> <span class="divider">•</span>
+                        <span>HARDWARE</span> <span class="divider">•</span>
+                        <span>DESIGN</span> <span class="divider">•</span>
+                        <span>CONTENT</span> <span class="divider">•</span>
+                        <span>STARTUPS</span> <span class="divider">•</span>
+                    </div>
+                </div>
+                <div class="tech-cards animate-chapter delay-2">
+                    <div class="mini-card">
+                        <span class="icon"><svg viewBox="0 0 24 24">
+                                <path
+                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                                </path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg></span>
+                        <span>Top Company Experts</span>
+                    </div>
+                    <div class="mini-card">
+                        <span class="icon"><svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                                </path>
+                            </svg></span>
+                        <span>All Domains Covered</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 4.5: Trending Content -->
+        <section id="trending" class="chapter full-screen">
+            <div class="bg-layer bg-5"></div>
+            <div class="content-wrapper centered">
+                <h2 class="animate-chapter">Top <span class="gradient-text">Rated</span></h2>
+                <div class="trending-grid animate-chapter delay-1" id="dynamicTopRatedContainer">
+                    <div
+                        style="text-align: center; color: var(--text-secondary); width: 100%; padding: 20px; grid-column: 1 / -1;">
+                        Loading trending content...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 5: Opportunities & Support -->
+        <section id="opportunities" class="chapter full-screen">
+            <div class="bg-layer bg-5"></div>
+            <div class="content-wrapper grid-layout">
+                <div class="grid-card animate-chapter">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                    </div>
+                    <h3>Daily Opportunities</h3>
+                    <p>Full-time roles & internships posted daily.</p>
+                </div>
+                <div class="grid-card animate-chapter delay-1">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="22" y1="12" x2="18" y2="12"></line>
+                            <line x1="6" y1="12" x2="2" y2="12"></line>
+                            <line x1="12" y1="6" x2="12" y2="2"></line>
+                            <line x1="12" y1="22" x2="12" y2="18"></line>
+                        </svg>
+                    </div>
+                    <h3>Personal Guidance</h3>
+                    <p>1:1 mentorship for selected builders.</p>
+                </div>
+                <div class="grid-card animate-chapter delay-2">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </div>
+                    <h3>Open Mic</h3>
+                    <p>Voice your problems, get expert solutions.</p>
+                </div>
+                <div class="grid-card animate-chapter delay-3">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4.5 9.5V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v5.5"></path>
+                            <path d="M2 22h20"></path>
+                            <path d="M12 12v10"></path>
+                            <path d="M12 2l-3 5h6l-3-5z"></path>
+                        </svg>
+                    </div>
+                    <h3>Startup Support</h3>
+                    <p>From idea to launch with community backing.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 6: Join / Application -->
+        <section id="join" class="chapter full-screen">
+            <div class="bg-layer bg-6"></div>
+            <div class="content-wrapper centered">
+                <h2 class="animate-chapter">Apply to <span class="gradient-text">Join</span></h2>
+                <p class="animate-chapter delay-1"
+                    style="margin-bottom: 40px; color: var(--text-secondary); max-width: 500px; text-align: center;">
+                    Selection is based on merit. Builders only. Tell us what you're working on.
+                </p>
+
+                <form class="join-form animate-chapter delay-2" id="joinForm">
+                    <div class="form-group">
+                        <input type="text" id="joinName" placeholder="Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="joinEmail" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <select id="joinRole" required>
+                            <option value="" disabled selected>I am a...</option>
+                            <option value="founder">Founder</option>
+                            <option value="engineer">Engineer</option>
+                            <option value="student">Student</option>
+                            <option value="investor">Investor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="joinSocial" placeholder="LinkedIn / Twitter URL" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <textarea id="joinDescription" placeholder="What are you building? (Be specific)" rows="3"
+                            required></textarea>
+                    </div>
+                    <button type="submit" class="cta-button magnetic-btn btn-block"
+                        style="grid-column: span 2; padding: 15px;">Submit Application</button>
+                    <!-- Success/Error Message Container -->
+                    <div id="formMsg"
+                        style="grid-column: span 2; text-align: center; margin-top: 10px; min-height: 20px; font-weight: 500;">
+                    </div>
+                </form>
+
+                <!-- Compact Footer integrated into final slide -->
+                <div class="compact-footer animate-chapter delay-3">
+                    <div class="socials">
+                        <a href="#">TW</a><a href="#">IG</a><a href="#">LN</a>
+                    </div>
+                    <p>&copy; 2024 FTW Community.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Video Gallery Modal -->
+    <div id="videoGalleryModal" data-lenis-prevent
+        style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.98); z-index: 10000; backdrop-filter: blur(15px); overflow-y: auto; padding: 40px 20px;">
+        <div style="max-width: 1000px; margin: 0 auto; position: relative;">
+
+            <!-- Modal Header with Explicit Close Button -->
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
+                <h2 style="font-size: 2rem; font-weight: 700; color: #fff; margin: 0;">Featured Video Library</h2>
+                <button id="closeGalleryBtn" class="cta-button"
+                    style="background: rgba(255,26,26,0.1); color: #ff1a1a; border: 1px solid rgba(255,26,26,0.3); padding: 8px 24px; font-size: 0.9rem;">
+                    &times; Close Gallery
+                </button>
+            </div>
+
+            <!-- Modal Player -> Removed conflicting .video-wrapper class, constrained max-width -->
+            <div
+                style="position: relative; margin-bottom: 50px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 850px; margin-left: auto; margin-right: auto; aspect-ratio: 16/9; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                <iframe id="modalPlayer" width="100%" height="100%" src="about:blank" title="YouTube Video"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen style="position: absolute; top: 0; left: 0;"></iframe>
+            </div>
+
+            <!-- Modal Grid -->
+            <h3 style="color: var(--text-secondary); margin-bottom: 20px;">More Videos</h3>
+            <div id="modalGalleryGrid"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding-bottom: 50px;">
+                <!-- Thumbnails injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

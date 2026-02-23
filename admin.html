@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTW | Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Dashboard Specific Overrides */
+        body {
+            overflow: hidden;
+            display: flex;
+        }
+
+        .admin-tab {
+            display: none;
+        }
+
+        .admin-tab.active-tab {
+            display: block;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.8);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sidebar-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            margin-bottom: 60px;
+            padding-left: 20px;
+        }
+
+        .sidebar-logo span {
+            color: var(--accent-color);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 15px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 26, 26, 0.1);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+
+        /* Main Content Area */
+        .dashboard-main {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 40px 60px;
+            position: relative;
+        }
+
+        /* Background Layers specifically for Dash */
+        .dash-bg {
+            position: fixed;
+            top: 0;
+            left: 280px;
+            width: calc(100% - 280px);
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(255, 26, 26, 0.05), transparent 60%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .page-header p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 30px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-card h3 {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .stat-card .trend {
+            font-size: 0.85rem;
+            color: #4CAF50;
+            /* Green for positive */
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* Data Section */
+        .data-section {
+            background: rgba(10, 10, 10, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        /* Glass Table */
+        .glass-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .glass-table th {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-table td {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+        }
+
+        .glass-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .glass-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: rgba(255, 165, 0, 0.1);
+            color: #FFA500;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+        }
+
+        .status-approved {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .action-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Member Profile Modal Specifics */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+        }
+
+        .profile-section-title {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .profile-field-group {
+            margin-bottom: 20px;
+        }
+
+        .profile-field-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .profile-field-group input,
+        .profile-field-group textarea,
+        .profile-field-group select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .profile-field-group input:focus,
+        .profile-field-group textarea:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .permissions-grid label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Generic FTW Noise -->
+    <div class="noise-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJnoiPjBmZVR1cmJ1bGVuY2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjY1IiBudW1PY3RhdmVzUIiMyIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0dHI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgb3BhY2l0eT0iMSIgZmlsdGVyPSJ1cmwoI2cpIi8+PC9zdmc+'); opacity: 0.03; pointer-events: none; z-index: 9999;">
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="index.html" class="sidebar-logo">FTW<span>.</span></a>
+
+        <ul class="nav-menu">
+            <li><a href="#" class="nav-item active" onclick="switchTab('overview')">Overview</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('events')">Events Manager</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('toprated')">Top Rated Manager</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('videos')">Video Manager</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('team')">Team Workspace</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('profile')">My Profile</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="#" class="nav-item" style="color: #ff3333;" onclick="logout()">← Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="dash-bg"></div>
+
+        <!-- TAB: OVERVIEW -->
+        <div id="tab-overview" class="admin-tab active-tab">
+            <header class="page-header">
+                <div>
+                    <h1>System Overview</h1>
+                    <p>Welcome back, Admin. Here is the daily summary.</p>
+                </div>
+            </header>
+
+            <!-- KPIS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Members</h3>
+                    <div class="value" id="totalMembers">-</div>
+                    <span class="trend">Live Data</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Apps</h3>
+                    <div class="value" id="pendingApps">-</div>
+                    <span class="trend" style="color: #FFA500;" id="pendingAlert">Fetching...</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Event RSVPs</h3>
+                    <div class="value" id="eventRsvps">-</div>
+                    <span class="trend">Upcoming</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 50px;">
+                <!-- Data Table -->
+                <div class="data-section">
+                    <div class="section-header">
+                        <h2>Recent Builder Applications</h2>
+                        <button class="cta-button" onclick="fetchDashboardData()"
+                            style="padding: 5px 15px; border-radius: 8px; font-size: 0.8rem;">Refresh Data</button>
+                    </div>
+
+                    <table class="glass-table">
+                        <thead>
+                            <tr>
+                                <th>Applicant Name</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Applied On</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationsTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-secondary);">Loading
+                                    real-time
+                                    applications...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Internal Announcements -->
+                <div class="data-section">
+                    <div class="section-header">
+                        <h2>Team Announcements</h2>
+                    </div>
+                    <div id="announcementsContainer"
+                        style="display: flex; flex-direction: column; gap: 15px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                        <p style="color: var(--text-secondary); text-align: center;">Loading...</p>
+                    </div>
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                        <textarea id="newAnnounceContent" placeholder="Post a team update..." rows="2"
+                            style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; margin-bottom: 10px;"></textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <select id="announcePriority"
+                                style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 5px; border-radius: 4px; font-size: 0.8rem;">
+                                <option value="low">Low Priority</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">Urgent</option>
+                            </select>
+                            <button onclick="postAnnouncement()" class="cta-button"
+                                style="padding: 5px 15px; border-radius: 6px; font-size: 0.8rem;">Post Update</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: VIDEO MANAGER -->
+        <div id="tab-videos" class="admin-tab">
+            <header class="page-header">
+                <div>
+                    <h1>Video Manager</h1>
+                    <p>Manage the featured videos on your homepage. The video with Priority 1 plays on the main screen.
+                    </p>
+                </div>
+            </header>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 40px;">
+                <!-- Add Video Form -->
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Publish Featured Video</h2>
+                    <form id="addVideoForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <input type="text" id="videoTitle" placeholder="Video Title (e.g., The Founder's Journey)"
+                            required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <input type="url" id="videoUrl" placeholder="Full YouTube URL..." required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="color: var(--text-secondary); font-size: 0.85rem;">Priority Level (1 = Main
+                                Homepage Feature)</label>
+                            <input type="number" id="videoPriority" value="2" min="1" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        </div>
+                        <button type="submit" class="cta-button">Add to Gallery</button>
+                        <div id="videoMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
+                    </form>
+                </div>
+
+                <!-- Video List -->
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Featured Video Gallery</h2>
+                    <table class="glass-table">
+                        <thead>
+                            <tr>
+                                <th>Priority</th>
+                                <th>Title</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="videosTableBody">
+                            <tr>
+                                <td colspan="3" style="text-align: center;">Loading videos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: EVENTS MANAGER -->
+        <div id="tab-events" class="admin-tab">
+            <header class="page-header">
+                <div>
+                    <h1>Events Manager</h1>
+                    <p>Add new upcoming experiences. Expired events automatically hide from the homepage.</p>
+                </div>
+            </header>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 40px;">
+                <!-- Add Event Form -->
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Publish New Event</h2>
+                    <form id="addEventForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <input type="text" id="eventTitle" placeholder="Event Title (e.g., Founder's Open Mic)" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <input type="date" id="eventDate" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; color-scheme: dark;">
+                        <input type="text" id="eventLocation" placeholder="Location (Optional)"
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <textarea id="eventDesc" placeholder="Short Description..." rows="3" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;"></textarea>
+                        <button type="submit" class="cta-button">Publish Event</button>
+                        <div id="eventMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
+                    </form>
+                </div>
+
+                <!-- Event List -->
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Live Events</h2>
+                    <table class="glass-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Title</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsTableBody">
+                            <tr>
+                                <td colspan="3" style="text-align: center;">Loading events...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: TOP RATED MANAGER -->
+        <div id="tab-toprated" class="admin-tab">
+            <header class="page-header">
+                <div>
+                    <h1>Top Rated Manager</h1>
+                    <p>Manage the trending content cards shown on the homepage.</p>
+                </div>
+            </header>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 40px;">
+                <!-- Add Top Rated Form -->
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Add Trending Link</h2>
+                    <form id="addTopRatedForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <select id="trTag" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <option value="BLOG">BLOG POST</option>
+                            <option value="TWEET">TWITTER / X</option>
+                            <option value="RESOURCE">RESOURCE</option>
+                        </select>
+                        <input type="url" id="trUrl" placeholder="https://..." required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: -5px;">The system will
+                            automatically extract the title, description, and cover image from this link.</p>
+                        <label style="color: var(--text-secondary); display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="trHighlight"> Make this item stand out (Highlight)
+                        </label>
+                        <button type="submit" class="cta-button">Auto-Generate Card</button>
+                        <div id="trMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
+                    </form>
+                </div>
+
+                <!-- Top Rated List -->
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Current Trending Cards</h2>
+                    <table class="glass-table">
+                        <thead>
+                            <tr>
+                                <th>Preview</th>
+                                <th>Details</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topRatedTableBody">
+                            <tr>
+                                <td colspan="3" style="text-align: center;">Loading items...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: TEAM WORKSPACE -->
+        <div id="tab-team" class="admin-tab">
+            <header class="page-header">
+                <div>
+                    <h1>Team Workspace</h1>
+                    <p>Manage your leads, coordinators, and their granular access permissions.</p>
+                </div>
+            </header>
+
+            <div style="display: flex; flex-direction: column; gap: 40px;">
+                <!-- Section 1: Team Management -->
+                <div style="display: grid; grid-template-columns: 1fr 2.5fr; gap: 40px;">
+                    <!-- Add Team Member Form -->
+                    <div class="data-section">
+                        <h2 style="margin-bottom: 20px;">Invite Team Member</h2>
+                        <form id="addTeamForm" style="display: flex; flex-direction: column; gap: 15px;">
+                            <input type="text" id="teamName" placeholder="Full Name" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="color: var(--text-secondary); font-size: 0.85rem;">Role</label>
+                                <select id="teamRole" required onchange="handleRoleChange()"
+                                    style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                                    <option value="coordinator">Coordinator</option>
+                                    <option value="lead">College Lead</option>
+                                    <option value="core_team">Core Team</option>
+                                    <option value="super_admin">Super Admin</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="teamUserId" placeholder="Unique Team ID" required
+                                    style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                                <button type="button" id="autoIdBtn" onclick="autoFetchTeamId()"
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;">Auto-Gen</button>
+                            </div>
+
+                            <input type="text" id="teamPasskey" placeholder="Initial Passkey" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <input type="text" id="teamOrg" placeholder="Organization (e.g. Stanford)" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+
+
+
+                            <button type="submit" class="cta-button">Invite to Team</button>
+                            <div id="teamMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
+                        </form>
+                    </div>
+
+                    <!-- Team Hierarchy List -->
+                    <div class="data-section">
+                        <h2 style="margin-bottom: 20px;">Organization Hierarchy</h2>
+                        <div id="teamHierarchyContainer">
+                            <!-- Grouped team members injected here -->
+                            <p style="color: var(--text-secondary); text-align: center;">Loading team structure...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Task Board -->
+                <div class="data-section">
+                    <div class="section-header">
+                        <h2>Internal Task Board</h2>
+                        <button class="cta-button" onclick="openTaskModal()"
+                            style="padding: 8px 16px; border-radius: 8px;">+ Assign New Task</button>
+                    </div>
+
+                    <div id="taskBoardContainer"
+                        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                        <!-- Three Columns: To Do, In Progress, Done -->
+                        <div class="task-column">
+                            <h3
+                                style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px; text-transform: uppercase;">
+                                To Do</h3>
+                            <div id="tasks-pending" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+                        <div class="task-column">
+                            <h3
+                                style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px; text-transform: uppercase;">
+                                In Progress</h3>
+                            <div id="tasks-in-progress" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+                        <div class="task-column">
+                            <h3
+                                style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px; text-transform: uppercase;">
+                                Completed</h3>
+                            <div id="tasks-completed" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Assignment Modal -->
+            <div id="taskModal" class="modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
+                <div class="data-section" style="width: 500px;">
+                    <h2 style="margin-bottom: 20px;">Assign New Task</h2>
+                    <form id="assignTaskForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <input type="text" id="taskTitle" placeholder="Task Title" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <textarea id="taskDesc" placeholder="Description..." required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;"></textarea>
+                        <select id="taskAssignedTo" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <option value="">Select Member...</option>
+                        </select>
+                        <input type="date" id="taskDueDate"
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; color-scheme: dark;">
+
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button type="submit" class="cta-button" style="flex: 1;">Assign Task</button>
+                            <button type="button" onclick="closeTaskModal()"
+                                style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: MY PROFILE -->
+        <div id="tab-profile" class="admin-tab">
+            <header class="page-header">
+                <div>
+                    <h1>Profile Settings</h1>
+                    <p>Manage your professional identity and security settings.</p>
+                </div>
+            </header>
+
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;">
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Change Password</h2>
+                    <form id="changePasswordForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <input type="password" id="currentPass" placeholder="Current Password" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <input type="password" id="newPass" placeholder="New Password" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <button type="submit" class="cta-button">Update Password</button>
+                        <div id="passMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
+                    </form>
+                </div>
+
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Your Organization</h2>
+                    <div
+                        style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <p id="profileOrgDisplay"
+                            style="font-size: 1.1rem; color: var(--accent-color); font-weight: bold;">Loading...</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">This organization
+                            is assigned by your Lead or during first setup.</p>
+                    </div>
+                </div>
+
+                <div class="data-section">
+                    <h2 style="margin-bottom: 20px;">Professional Details</h2>
+                    <form id="updateProfileForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <p id="profileLockedMsg"
+                            style="display: none; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 10px;">
+                            <i class="fas fa-lock"></i> Professional details are locked after your one-time initial
+                            setup. Contact your Lead to make changes.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <input type="text" id="profPhone" placeholder="Phone Number"
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <input type="text" id="profSkills" placeholder="Skills (comma separated)"
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        </div>
+                        <textarea id="profBio" placeholder="Tell us about yourself..." rows="4"
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;"></textarea>
+
+                        <h4 style="color: var(--text-secondary); margin-top: 10px;">Social Links</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                            <input type="text" id="linkGithub" placeholder="GitHub Username"
+                                style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                            <input type="text" id="linkLinkedin" placeholder="LinkedIn URL"
+                                style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                            <input type="text" id="linkTwitter" placeholder="Twitter Username"
+                                style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                        </div>
+
+                        <button type="submit" class="cta-button" style="margin-top: 10px;">Save Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ONBOARDING MODAL -->
+    <div id="onboardingModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(20px);">
+        <div class="data-section" style="width: 600px; padding: 40px; border: 1px solid var(--accent-color);">
+            <h1 style="font-size: 2rem; margin-bottom: 5px; color: #fff;">Welcome to FTW Team<span>.</span></h1>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">This is your first login. Please secure your
+                account and complete your profile to continue.</p>
+
+            <form id="onboardingForm" style="display: flex; flex-direction: column; gap: 20px;">
+                <div
+                    style="padding: 20px; background: rgba(255,26,26,0.05); border-radius: 12px; border: 1px solid rgba(255,26,26,0.2);">
+                    <h3 style="font-size: 1rem; margin-bottom: 15px; color: var(--accent-color);">Account Security</h3>
+                    <input type="password" id="onboardNewPass" placeholder="Set a New Private Password" required
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                </div>
+
+                <div>
+                    <h3 style="font-size: 1rem; margin-bottom: 15px;">Your Professional Profile</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <input type="text" id="onboardPhone" placeholder="Personal Phone" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                        <select id="onboardOrg" required
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                            <option value="">Select Your College...</option>
+                            <option value="Teegala Krishna Reddy Engineering College">Teegala Krishna Reddy (TKREC)
+                            </option>
+                            <option value="TKR college of Engineering and Technology">TKR College of Engg & Tech
+                                (TKRCET)</option>
+                            <option value="Global Institute of Engineering and Technology">Global Institute (GIET)
+                            </option>
+                            <option value="Other">Other Community Member</option>
+                        </select>
+                    </div>
+                    <input type="text" id="onboardSkills" placeholder="Top Skills (e.g. Design, JS, Engineering)"
+                        required
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; margin-bottom: 15px;">
+                    <textarea id="onboardBio" placeholder="Short bio about your role in FTW..." rows="3" required
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <button type="submit" class="cta-button" style="flex: 2; padding: 15px;">Finish Account
+                        Setup</button>
+                    <button type="button" onclick="location.href='index.html'"
+                        style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;">Logout</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Secure Fetch Wrapper
+        async function fetchWithAuth(url, options = {}) {
+            const token = sessionStorage.getItem('ftwToken');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            };
+
+            const res = await fetch(url, { ...options, headers });
+            if (res.status === 401 || res.status === 403) {
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+            }
+            return res;
+        }
+
+        // Check authentication on load
+        if (!sessionStorage.getItem('ftwToken')) {
+            window.location.href = 'login.html';
+        }
+
+        // Fetch real-time data from Express Server
+        async function fetchDashboardData() {
+            try {
+                // Fetch Stats
+                const statsRes = await fetchWithAuth('/api/stats');
+                if (!statsRes) return;
+                const stats = await statsRes.json();
+
+                document.getElementById('totalMembers').innerText = stats.totalMembers;
+                document.getElementById('pendingApps').innerText = stats.pendingApps;
+                document.getElementById('eventRsvps').innerText = stats.upcomingRSVPs;
+
+                const alertEl = document.getElementById('pendingAlert');
+                if (stats.pendingApps > 0) {
+                    alertEl.innerText = "Action Required";
+                    alertEl.style.color = "#FFA500";
+                } else {
+                    alertEl.innerText = "All caught up";
+                    alertEl.style.color = "#4CAF50";
+                }
+
+                // Fetch Applications
+                const appsRes = await fetchWithAuth('/api/applications');
+                const applications = await appsRes.json();
+
+                const tableBody = document.getElementById('applicationsTableBody');
+                tableBody.innerHTML = ''; // Clear loading message
+
+                if (applications.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">No applications found yet.</td></tr>';
+                    return;
+                }
+
+                applications.forEach(app => {
+                    const row = document.createElement('tr');
+                    const date = new Date(app.appliedAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                    const statusClass = app.status === 'pending' ? 'status-pending' : 'status-approved';
+                    const statusText = app.status === 'pending' ? 'Pending Review' : 'Approved';
+
+                    let actionButtons = ``;
+                    if (app.status === 'pending') {
+                        actionButtons = `
+                            <button onclick="updateAppStatus('${app._id}', 'approved')" style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; border: 1px solid #4CAF50; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: 5px;">Approve</button>
+                            <button onclick="updateAppStatus('${app._id}', 'rejected')" style="background: rgba(255, 165, 0, 0.2); color: #FFA500; border: 1px solid #FFA500; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: 5px;">Reject</button>
+                        `;
+                    }
+
+                    actionButtons += `
+                        <button onclick="deleteApp('${app._id}')" style="background: rgba(255, 26, 26, 0.2); color: #ff1a1a; border: 1px solid #ff1a1a; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Delete</button>
+                    `;
+
+                    row.innerHTML = `
+                        <td><strong>${app.fullName}</strong></td>
+                        <td style="text-transform: capitalize;">${app.role}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <a href="${app.socialUrl}" target="_blank" class="action-link" style="display: block; margin-bottom: 8px;">View Profile</a>
+                            <div style="display: flex;">${actionButtons}</div>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Failed to load dashboard data:", error);
+                document.getElementById('applicationsTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #FF1A1A;">Error loading database content. Make sure the Node server is running.</td></tr>';
+            }
+        }
+
+        async function updateAppStatus(id, newStatus) {
+            try {
+                const res = await fetchWithAuth(`/api/applications/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (res.ok) fetchDashboardData();
+            } catch (error) { console.error('Error updating application:', error); }
+        }
+
+        async function deleteApp(id) {
+            if (!confirm('Are you sure you want to permanently delete this application?')) return;
+            try {
+                const res = await fetchWithAuth(`/api/applications/${id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) fetchDashboardData();
+            } catch (error) { console.error('Error deleting application:', error); }
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active-tab'));
+            // Remove active class from nav links
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+
+            // Show target tab
+            document.getElementById(`tab-${tabId}`).classList.add('active-tab');
+            // Add active class to clicked nav item
+            event.target.classList.add('active');
+
+            if (tabId === 'videos') loadVideosTab();
+            if (tabId === 'events') loadEventsTab();
+            if (tabId === 'toprated') loadTopRatedTab();
+            if (tabId === 'team') loadTeamTab();
+            if (tabId === 'profile') loadProfileTab();
+            if (tabId === 'overview') {
+                fetchDashboardData();
+                loadAnnouncements();
+            }
+        }
+
+        // --- Video Manager Logic ---
+        async function loadVideosTab() {
+            try {
+                const res = await fetchWithAuth('/api/videos');
+                const videos = await res.json();
+                const tbody = document.getElementById('videosTableBody');
+                tbody.innerHTML = '';
+
+                if (videos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">No videos found.</td></tr>';
+                    return;
+                }
+
+                videos.forEach(v => {
+                    const priorityBadge = v.priority === 1 ?
+                        '<span class="status-badge" style="background: rgba(255, 26, 26, 0.2); color: #ff1a1a;">1 (Main)</span>' :
+                        `<span class="status-badge" style="background: rgba(255,255,255,0.1); color: #fff;">${v.priority}</span>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${priorityBadge}</td>
+                            <td><strong>${v.title}</strong><br><a href="https://youtu.be/${v.youtubeId}" target="_blank" style="color: var(--text-secondary); font-size: 0.8rem;">youtu.be/${v.youtubeId}</a></td>
+                            <td><button onclick="deleteVideo('${v._id}')" style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Delete</button></td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('addVideoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgEl = document.getElementById('videoMsg');
+            msgEl.style.color = 'var(--text-secondary)';
+            msgEl.innerText = 'Adding...';
+
+            const payload = {
+                title: document.getElementById('videoTitle').value,
+                youtubeUrl: document.getElementById('videoUrl').value,
+                priority: document.getElementById('videoPriority').value
+            };
+
+            try {
+                const res = await fetchWithAuth('/api/videos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    msgEl.style.color = '#4CAF50';
+                    msgEl.innerText = 'Video Added!';
+                    document.getElementById('addVideoForm').reset();
+                    document.getElementById('videoPriority').value = "2"; // reset default
+                    loadVideosTab(); // Refresh table
+                    setTimeout(() => msgEl.innerText = '', 3000);
+                } else {
+                    msgEl.style.color = '#FF1A1A';
+                    msgEl.innerText = 'Invalid YouTube URL.';
+                }
+            } catch (err) {
+                msgEl.style.color = '#FF1A1A';
+                msgEl.innerText = 'Failed to add video.';
+            }
+        });
+
+        async function deleteVideo(id) {
+            if (confirm('Are you sure you want to delete this video?')) {
+                await fetchWithAuth(`/api/videos/${id}`, { method: 'DELETE' });
+                loadVideosTab();
+            }
+        }
+
+        // --- Events Tab Logic ---
+        async function loadEventsTab() {
+            try {
+                const res = await fetchWithAuth('/api/events');
+                const events = await res.json();
+                const tbody = document.getElementById('eventsTableBody');
+                tbody.innerHTML = '';
+
+                if (events.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">No events found.</td></tr>';
+                    return;
+                }
+
+                events.forEach(ev => {
+                    const d = new Date(ev.date).toLocaleDateString();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${d}</td>
+                            <td><strong>${ev.title}</strong><br><small style="color: var(--text-secondary);">${ev.location || 'No location'}</small></td>
+                            <td><button onclick="deleteEvent('${ev._id}')" style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Delete</button></td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('addEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgEl = document.getElementById('eventMsg');
+            msgEl.style.color = 'var(--text-secondary)';
+            msgEl.innerText = 'Publishing...';
+
+            const payload = {
+                title: document.getElementById('eventTitle').value,
+                date: document.getElementById('eventDate').value,
+                location: document.getElementById('eventLocation').value,
+                description: document.getElementById('eventDesc').value
+            };
+
+            try {
+                const res = await fetchWithAuth('/api/events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    msgEl.style.color = '#4CAF50';
+                    msgEl.innerText = 'Event Published!';
+                    document.getElementById('addEventForm').reset();
+                    loadEventsTab(); // Refresh table
+                    setTimeout(() => msgEl.innerText = '', 3000);
+                }
+            } catch (err) {
+                msgEl.style.color = '#FF1A1A';
+                msgEl.innerText = 'Failed to publish event.';
+            }
+        });
+
+        async function deleteEvent(id) {
+            if (confirm('Are you sure you want to delete this event?')) {
+                await fetch(`/api/events/${id}`, { method: 'DELETE' });
+                loadEventsTab();
+            }
+        }
+
+        // --- Top Rated Logic ---
+        async function loadTopRatedTab() {
+            try {
+                const res = await fetchWithAuth('/api/toprated');
+                const links = await res.json();
+                const tbody = document.getElementById('topRatedTableBody');
+                tbody.innerHTML = '';
+
+                if (links.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">No items found.</td></tr>';
+                    return;
+                }
+
+                links.forEach(item => {
+                    const imgHtml = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 6px;">` : `<div style="width: 80px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-secondary);">No Img</div>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="width: 100px;">${imgHtml}</td>
+                            <td>
+                                <span class="status-badge" style="background: rgba(255,255,255,0.1); color: #fff; margin-bottom: 5px; display: inline-block;">${item.tag}</span><br>
+                                <strong><a href="${item.url}" target="_blank" style="color: #fff; text-decoration: none;">${item.title || 'Unknown Title'}</a></strong><br>
+                                <small style="color: var(--text-secondary);">${item.description ? item.description.substring(0, 60) + '...' : 'No description scraped.'}</small>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 10px;">
+                                    <button onclick="editTopRated('${item._id}', '${item.url}', '${item.tag}', ${item.highlight})" style="background: transparent; color: #4CAF50; border: 1px solid #4CAF50; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Edit Link</button>
+                                    <button onclick="deleteTopRated('${item._id}')" style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('addTopRatedForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgEl = document.getElementById('trMsg');
+            msgEl.style.color = 'var(--text-secondary)';
+            msgEl.innerText = 'Scraping Link & Generating...';
+
+            const payload = {
+                tag: document.getElementById('trTag').value,
+                url: document.getElementById('trUrl').value,
+                highlight: document.getElementById('trHighlight').checked
+            };
+
+            try {
+                const res = await fetchWithAuth('/api/toprated', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    msgEl.style.color = '#4CAF50';
+                    msgEl.innerText = 'Card Generated Successfully!';
+                    document.getElementById('addTopRatedForm').reset();
+                    loadTopRatedTab(); // Refresh table
+                    setTimeout(() => msgEl.innerText = '', 3000);
+                } else {
+                    const errObj = await res.json();
+                    msgEl.style.color = '#FF1A1A';
+                    msgEl.innerText = errObj.error || 'Failed to scrape.';
+                }
+            } catch (err) {
+                msgEl.style.color = '#FF1A1A';
+                msgEl.innerText = 'Failed to connect.';
+            }
+        });
+
+        async function editTopRated(id, currentUrl, currentTag, currentHighlight) {
+            const newUrl = prompt(`Update the raw URL for ${currentTag}. The system will re-scrape the new link immediately:`, currentUrl);
+
+            if (newUrl) {
+                try {
+                    const res = await fetchWithAuth(`/api/toprated/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tag: currentTag, url: newUrl, highlight: currentHighlight })
+                    });
+
+                    if (res.ok) {
+                        alert("Link updated and re-scraped successfully!");
+                        loadTopRatedTab();
+                    } else {
+                        alert("Error saving the updated link.");
+                    }
+                } catch (err) {
+                    alert("Network error.");
+                }
+            }
+        }
+
+        async function deleteTopRated(id) {
+            if (confirm('Are you sure you want to remove this trending item?')) {
+                await fetchWithAuth(`/api/toprated/${id}`, { method: 'DELETE' });
+                loadTopRatedTab();
+            }
+        }
+
+        // Initialize Magnetic physics for dashboard buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            // initMagneticButtons(); // Temporarily disabled or missing
+            console.log('DOM Content Loaded - Initializing Dashboard');
+            fetchDashboardData(); // Call immediately on load
+            loadAnnouncements();
+            checkOnboarding();
+        });
+
+        // --- Announcements Logic ---
+        async function loadAnnouncements() {
+            try {
+                const res = await fetchWithAuth('/api/announcements');
+                const data = await res.json();
+                const container = document.getElementById('announcementsContainer');
+                container.innerHTML = '';
+
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No announcements yet.</p>';
+                    return;
+                }
+
+                data.forEach(ann => {
+                    const card = document.createElement('div');
+                    const priorityColors = { low: '#4CAF50', medium: '#FFA500', high: '#ff3333' };
+                    card.style.padding = '15px';
+                    card.style.background = 'rgba(255,255,255,0.03)';
+                    card.style.borderLeft = `4px solid ${priorityColors[ann.priority]}`;
+                    card.style.borderRadius = '8px';
+                    card.innerHTML = `
+                        <p style="margin-bottom: 8px; font-size: 0.95rem;">${ann.content}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-secondary);">
+                            <span>By ${ann.author.name}</span>
+                            <span>${new Date(ann.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function postAnnouncement() {
+            const content = document.getElementById('newAnnounceContent').value;
+            const priority = document.getElementById('announcePriority').value;
+            if (!content) return;
+
+            // For now, using admin IDSJ01 as default author. 
+            // In a real session, we'd use the logged-in user's ID.
+            try {
+                const teamRes = await fetchWithAuth('/api/team');
+                const team = await teamRes.json();
+                const admin = team.find(u => u.teamId === 'FTWSJ01');
+
+                await fetchWithAuth('/api/announcements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content, authorId: admin._id, priority })
+                });
+                document.getElementById('newAnnounceContent').value = '';
+                loadAnnouncements();
+            } catch (err) { console.error(err); }
+        }
+
+        // --- Team Workspace Logic ---
+        async function loadTeamTab() {
+            try {
+                const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+                const query = `?org=${encodeURIComponent(user.organization)}&role=${user.role}`;
+                const res = await fetchWithAuth(`/api/team${query}`);
+                const data = await res.json();
+                const container = document.getElementById('teamHierarchyContainer');
+                container.innerHTML = '';
+
+                // Update Task Member Dropdown
+                const taskSelect = document.getElementById('taskAssignedTo');
+                taskSelect.innerHTML = '<option value="">Select Member...</option>';
+                data.forEach(m => {
+                    taskSelect.innerHTML += `<option value="${m._id}">${m.name} (${m.teamId})</option>`;
+                });
+
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No team members found.</p>';
+                    return;
+                }
+
+                // Group by Organization
+                const orgs = {};
+                data.forEach(member => {
+                    if (!orgs[member.organization]) orgs[member.organization] = [];
+                    orgs[member.organization].push(member);
+                });
+
+                for (const org in orgs) {
+                    const orgSection = document.createElement('div');
+                    orgSection.style.marginBottom = '40px';
+                    orgSection.innerHTML = `<h3 style="color: var(--accent-color); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 20px;">${org}</h3>`;
+
+                    const table = document.createElement('table');
+                    table.className = 'glass-table';
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Role</th>
+                                <th>Permissions</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    `;
+                    const tbody = table.querySelector('tbody');
+
+                    orgs[org].forEach(m => {
+                        const tr = document.createElement('tr');
+                        const isSuperIdx = m.role === 'super_admin';
+                        const disabledAttr = isSuperIdx ? 'disabled' : ''; // Protect super admins from self-lockout or changes here
+
+                        tr.innerHTML = `
+                            <td>
+                                <strong onclick="openMemberProfile('${m._id}')" style="cursor: pointer; color: var(--accent-color); text-decoration: underline;">${m.name}</strong><br>
+                                <div style="display: flex; align-items: center; gap: 5px; margin-top: 3px;">
+                                    <span style="font-size: 0.8rem; color: var(--text-secondary);">ID: ${m.teamId}</span>
+                                    ${!isSuperIdx ? `<button onclick="editTeamId('${m._id}', '${m.teamId}')" style="background: transparent; color: var(--accent-color); border: none; font-size: 0.7rem; cursor: pointer; text-decoration: underline;">Edit</button>` : ''}
+                                </div>
+                                ${m.role === 'coordinator' && !m.isFirstLogin ? `<div style="margin-top: 5px;"><span class="status-badge" style="background: rgba(76, 175, 80, 0.1); color: #4CAF50; font-size: 0.65rem; padding: 2px 6px;"><i class="fas fa-lock" style="font-size: 0.6rem;"></i> Profile Locked</span></div>` : ''}
+                            </td>
+                            <td>
+                                <select onchange="updateTeamRole('${m._id}', this.value)" ${disabledAttr} style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 5px; border-radius: 4px;">
+                                    <option value="coordinator" ${m.role === 'coordinator' ? 'selected' : ''}>Coordinator</option>
+                                    <option value="lead" ${m.role === 'lead' ? 'selected' : ''}>Lead</option>
+                                    <option value="core_team" ${m.role === 'core_team' ? 'selected' : ''}>Core Team</option>
+                                    <option value="super_admin" ${m.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
+                                </select>
+                            </td>
+                            <td>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap:5px; font-size: 0.75rem;">
+                                    <label><input type="checkbox" ${m.permissions.canManageVideos ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canManageVideos', this.checked)" ${disabledAttr}> Videos</label>
+                                    <label><input type="checkbox" ${m.permissions.canManageEvents ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canManageEvents', this.checked)" ${disabledAttr}> Events</label>
+                                    <label><input type="checkbox" ${m.permissions.canManageTopRated ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canManageTopRated', this.checked)" ${disabledAttr}> Trending</label>
+                                    <label><input type="checkbox" ${m.permissions.canApproveApps ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canApproveApps', this.checked)" ${disabledAttr}> Apps</label>
+                                    <label><input type="checkbox" ${m.permissions.canManageTeam ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canManageTeam', this.checked)" ${disabledAttr}> Team</label>
+                                </div>
+                            </td>
+                            <td>
+                                <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                    <input type="checkbox" ${m.isActive ? 'checked' : ''} onchange="toggleActive('${m._id}', this.checked)" ${disabledAttr}>
+                                    <span class="status-badge ${m.isActive ? 'status-approved' : 'status-pending'}" style="padding: 2px 8px; font-size: 0.7rem;">${m.isActive ? 'Active' : 'Locked'}</span>
+                                </label>
+                            </td>
+                            <td>
+                                <button onclick="deleteTeamMember('${m._id}')" ${disabledAttr} style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Remove</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    orgSection.appendChild(table);
+                    container.appendChild(orgSection);
+                }
+                loadTasks();
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('addTeamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('teamMsg');
+            msg.style.color = 'var(--text-secondary)';
+            msg.innerText = 'Inviting...';
+
+            const payload = {
+                name: document.getElementById('teamName').value,
+                teamId: document.getElementById('teamUserId').value,
+                passkey: document.getElementById('teamPasskey').value,
+                organization: document.getElementById('teamOrg').value,
+                role: document.getElementById('teamRole').value
+            };
+
+            try {
+                const res = await fetchWithAuth('/api/team', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    msg.style.color = '#4CAF50';
+                    msg.innerText = 'Member Invited Successfully!';
+                    document.getElementById('addTeamForm').reset();
+                    loadTeamTab();
+                } else {
+                    const err = await res.json();
+                    msg.style.color = '#ff3333';
+                    msg.innerText = err.error || 'Invitation Failed';
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        function handleRoleChange() {
+            const role = document.getElementById('teamRole').value;
+            const autoBtn = document.getElementById('autoIdBtn');
+            const passkeyInput = document.getElementById('teamPasskey');
+
+            if (role === 'coordinator') {
+                autoBtn.style.display = 'block';
+                passkeyInput.value = 'FTW@2026';
+            } else if (role === 'lead') {
+                autoBtn.style.display = 'none';
+                passkeyInput.value = 'FTW@LEAD';
+                document.getElementById('teamUserId').value = '';
+            } else {
+                autoBtn.style.display = 'none';
+                passkeyInput.value = '12345678';
+                document.getElementById('teamUserId').value = '';
+            }
+        }
+
+        async function autoFetchTeamId() {
+            const role = document.getElementById('teamRole').value;
+            if (role !== 'coordinator') return;
+
+            const btn = document.getElementById('autoIdBtn');
+            const originalText = btn.innerText;
+            btn.innerText = '...';
+
+            try {
+                const res = await fetchWithAuth('/api/team/next-coordinator-id');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('teamUserId').value = data.nextId;
+                }
+            } catch (e) {
+                console.error("Failed to auto-fetch ID", e);
+            } finally {
+                btn.innerText = originalText;
+            }
+        }
+
+        // Run once on load to set defaults based on "coordinator" selection
+        document.addEventListener('DOMContentLoaded', () => {
+            // Let UI render first before attaching
+            setTimeout(() => {
+                if (document.getElementById('teamRole')) {
+                    handleRoleChange();
+                }
+            }, 500);
+        });
+
+        async function togglePerm(id, perm, val) {
+            try {
+                const userSession = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+                const query = `?org=${encodeURIComponent(userSession.organization)}&role=${userSession.role}`;
+                const res = await fetchWithAuth(`/api/team${query}`);
+                const team = await res.json();
+                const user = team.find(u => u._id === id);
+                if (!user) return;
+
+                const newPermissions = { ...user.permissions, [perm]: val };
+                await fetchWithAuth(`/api/team/${id}/permissions`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ permissions: newPermissions })
+                });
+                loadTeamTab();
+            } catch (err) { console.error(err); }
+        }
+
+        async function editTeamId(id, currentId) {
+            console.log('editTeamId clicked:', id, currentId);
+            const newId = prompt('Enter new Team ID:', currentId);
+            if (newId && newId !== currentId) {
+                console.log('Updating Team ID to:', newId);
+                try {
+                    const res = await fetchWithAuth(`/api/team/${id}/update-id`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ teamId: newId })
+                    });
+                    if (res && res.ok) {
+                        console.log('Update successful');
+                        loadTeamTab();
+                    } else {
+                        console.error('Update failed:', res ? res.status : 'No response');
+                    }
+                } catch (err) { console.error('Error in editTeamId:', err); }
+            }
+        }
+
+        // --- Task Logic ---
+        function openTaskModal() { document.getElementById('taskModal').style.display = 'flex'; }
+        function closeTaskModal() { document.getElementById('taskModal').style.display = 'none'; }
+
+        async function loadTasks() {
+            try {
+                const res = await fetchWithAuth('/api/tasks');
+                const tasks = await res.json();
+
+                ['pending', 'in-progress', 'completed'].forEach(status => {
+                    const container = document.getElementById(`tasks-${status}`);
+                    container.innerHTML = '';
+                    const filtered = tasks.filter(t => t.status === status);
+
+                    if (filtered.length === 0) {
+                        container.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; border: 1px dashed rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">Empty</p>`;
+                        return;
+                    }
+
+                    filtered.forEach(t => {
+                        const card = document.createElement('div');
+                        card.style.background = 'rgba(255,255,255,0.02)';
+                        card.style.border = '1px solid rgba(255,255,255,0.05)';
+                        card.style.padding = '15px';
+                        card.style.borderRadius = '10px';
+                        card.innerHTML = `
+                            <h4 style="font-size: 0.9rem; margin-bottom: 5px;">${t.title}</h4>
+                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 10px;">${t.description}</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.7rem; color: var(--accent-color);">Assigned: ${t.assignedTo ? t.assignedTo.name : 'Unassigned'}</span>
+                                <div style="display: flex; gap: 5px;">
+                                    ${status !== 'completed' ? `<button onclick="updateTaskStatus('${t._id}', '${status === 'pending' ? 'in-progress' : 'completed'}')" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; cursor: pointer;">→</button>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('assignTaskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDesc').value,
+                assignedTo: document.getElementById('taskAssignedTo').value,
+                dueDate: document.getElementById('taskDueDate').value
+            };
+
+            try {
+                await fetchWithAuth('/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                closeTaskModal();
+                loadTasks();
+            } catch (err) { console.error(err); }
+        });
+
+        async function updateTaskStatus(id, newStatus) {
+            try {
+                await fetchWithAuth(`/api/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                loadTasks();
+            } catch (err) { console.error(err); }
+        }
+
+        async function toggleActive(id, val) {
+            try {
+                await fetchWithAuth(`/api/team/${id}/permissions`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isActive: val })
+                });
+                loadTeamTab();
+            } catch (err) { console.error(err); }
+        }
+
+        async function updateTeamRole(id, role) {
+            try {
+                await fetchWithAuth(`/api/team/${id}/permissions`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role })
+                });
+                loadTeamTab();
+            } catch (err) { console.error(err); }
+        }
+
+        // --- Profile & Onboarding JS Logic ---
+        function loadProfileTab() {
+            const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+            if (!user) return;
+
+            document.getElementById('profileOrgDisplay').innerText = user.organization || 'Not Assigned';
+
+            // "One-Time" setup lockout for coordinators
+            if (user.role === 'coordinator' && !user.isFirstLogin) {
+                document.getElementById('profileLockedMsg').style.display = 'block';
+                // Lock fields
+                ['profPhone', 'profSkills', 'profBio', 'linkGithub', 'linkLinkedin', 'linkTwitter'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.disabled = true;
+                });
+                // Hide save button
+                const saveBtn = document.querySelector('#updateProfileForm .cta-button');
+                if (saveBtn) saveBtn.style.display = 'none';
+            }
+        }
+
+        document.getElementById('onboardingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+            const payload = {
+                userId: user.id,
+                newPasskey: document.getElementById('onboardNewPass').value,
+                phone: document.getElementById('onboardPhone').value,
+                skills: document.getElementById('onboardSkills').value,
+                bio: document.getElementById('onboardBio').value,
+                organization: document.getElementById('onboardOrg').value
+            };
+
+            try {
+                const res = await fetchWithAuth('/api/profile/complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    const updated = await res.json();
+                    alert('Profile setup complete! Welcome aboard.');
+                    document.getElementById('onboardingModal').style.display = 'none';
+                    // Update session with new org and firstLogin=false
+                    user.isFirstLogin = false;
+                    user.organization = updated.user.organization;
+                    sessionStorage.setItem('ftwAdmin', JSON.stringify(user));
+                    location.reload(); // Reload to apply locks
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        function checkOnboarding() {
+            const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+            if (user && user.isFirstLogin) {
+                document.getElementById('onboardingModal').style.display = 'flex';
+            }
+        }
+
+        async function deleteTeamMember(id) {
+            if (!confirm('Are you sure you want to remove this team member?')) return;
+            try {
+                await fetchWithAuth(`/api/team/${id}`, { method: 'DELETE' });
+                loadTeamTab();
+            } catch (err) { console.error(err); }
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // --- Member Profile Editing Logic ---
+        async function openMemberProfile(id) {
+            try {
+                const res = await fetchWithAuth(`/api/team/${id}`);
+                const user = await res.json();
+
+                document.getElementById('editMemberId').value = user._id;
+                document.getElementById('modalMemberName').innerText = `Profile: ${user.name}`;
+                document.getElementById('editName').value = user.name;
+                document.getElementById('editTeamIdVal').value = user.teamId;
+                document.getElementById('editOrg').value = user.organization;
+                document.getElementById('editRole').value = user.role;
+                document.getElementById('editIsActive').value = user.isActive.toString();
+                document.getElementById('editPhone').value = user.phone || '';
+                document.getElementById('editLinkedin').value = (user.socialLinks && user.socialLinks.linkedin) || '';
+                document.getElementById('editGithub').value = (user.socialLinks && user.socialLinks.github) || '';
+                document.getElementById('editBio').value = user.bio || '';
+                document.getElementById('editSkills').value = user.skills ? user.skills.join(', ') : '';
+
+                // Permissions
+                document.getElementById('permVideos').checked = user.permissions.canManageVideos;
+                document.getElementById('permEvents').checked = user.permissions.canManageEvents;
+                document.getElementById('permTrending').checked = user.permissions.canManageTopRated;
+                document.getElementById('permApps').checked = user.permissions.canApproveApps;
+                document.getElementById('permTeam').checked = user.permissions.canManageTeam;
+
+                document.getElementById('memberProfileModal').style.display = 'flex';
+            } catch (err) { console.error('Error loading member profile:', err); }
+        }
+
+        function closeMemberProfileModal() {
+            document.getElementById('memberProfileModal').style.display = 'none';
+        }
+
+        async function saveMemberProfile(e) {
+            e.preventDefault();
+            const id = document.getElementById('editMemberId').value;
+            const payload = {
+                name: document.getElementById('editName').value,
+                teamId: document.getElementById('editTeamIdVal').value,
+                organization: document.getElementById('editOrg').value,
+                role: document.getElementById('editRole').value,
+                isActive: document.getElementById('editIsActive').value === 'true',
+                phone: document.getElementById('editPhone').value,
+                socialLinks: {
+                    linkedin: document.getElementById('editLinkedin').value,
+                    github: document.getElementById('editGithub').value
+                },
+                bio: document.getElementById('editBio').value,
+                skills: document.getElementById('editSkills').value.split(',').map(s => s.trim()).filter(s => s !== ''),
+                permissions: {
+                    canManageVideos: document.getElementById('permVideos').checked,
+                    canManageEvents: document.getElementById('permEvents').checked,
+                    canManageTopRated: document.getElementById('permTrending').checked,
+                    canApproveApps: document.getElementById('permApps').checked,
+                    canManageTeam: document.getElementById('permTeam').checked
+                }
+            };
+
+            try {
+                const res = await fetchWithAuth(`/api/team/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    alert('Member profile updated successfully!');
+                    closeMemberProfileModal();
+                    loadTeamTab();
+                } else {
+                    const err = await res.json();
+                    alert(`Error: ${err.error}`);
+                }
+            } catch (err) { console.error('Error saving member profile:', err); }
+        }
+    </script>
+    <!-- MEMBER PROFILE MODAL -->
+    <div id="memberProfileModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
+        <div class="data-section" style="width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="section-header">
+                <h2 id="modalMemberName">Member Profile</h2>
+                <button class="cta-button" onclick="closeMemberProfileModal()"
+                    style="background: transparent; border: 1px solid rgba(255,255,255,0.2); padding: 5px 10px;">Close</button>
+            </div>
+
+            <form id="memberProfileForm" onsubmit="saveMemberProfile(event)">
+                <input type="hidden" id="editMemberId">
+                <div class="profile-grid">
+                    <!-- Left Column: Identity & Contact -->
+                    <div>
+                        <div class="profile-section-title">Identity & Role</div>
+                        <div class="profile-field-group">
+                            <label>Full Name</label>
+                            <input type="text" id="editName" required>
+                        </div>
+                        <div class="profile-field-group">
+                            <label>Team ID</label>
+                            <input type="text" id="editTeamIdVal" required>
+                        </div>
+                        <div class="profile-field-group">
+                            <label>Organization</label>
+                            <input type="text" id="editOrg" required>
+                        </div>
+                        <div class="profile-field-group">
+                            <label>Role</label>
+                            <select id="editRole">
+                                <option value="coordinator">Coordinator</option>
+                                <option value="lead">College Lead</option>
+                                <option value="core_team">Core Team</option>
+                                <option value="super_admin">Super Admin</option>
+                            </select>
+                        </div>
+                        <div class="profile-field-group">
+                            <label>Status</label>
+                            <select id="editIsActive">
+                                <option value="true">Active</option>
+                                <option value="false">Locked</option>
+                            </select>
+                        </div>
+
+                        <div class="profile-section-title" style="margin-top: 30px;">Contact & Social</div>
+                        <div class="profile-field-group">
+                            <label>Phone</label>
+                            <input type="text" id="editPhone">
+                        </div>
+                        <div class="profile-field-group">
+                            <label>LinkedIn URL</label>
+                            <input type="text" id="editLinkedin">
+                        </div>
+                        <div class="profile-field-group">
+                            <label>GitHub Username</label>
+                            <input type="text" id="editGithub">
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Bio, Skills, Permissions -->
+                    <div>
+                        <div class="profile-section-title">Professional Bio</div>
+                        <div class="profile-field-group">
+                            <textarea id="editBio" rows="4" placeholder="Tell us more about this member..."></textarea>
+                        </div>
+                        <div class="profile-field-group">
+                            <label>Skills (comma separated)</label>
+                            <input type="text" id="editSkills">
+                        </div>
+
+                        <div class="profile-section-title" style="margin-top: 30px;">Access Permissions</div>
+                        <div class="permissions-grid">
+                            <label><input type="checkbox" id="permVideos"> Manage Videos</label>
+                            <label><input type="checkbox" id="permEvents"> Manage Events</label>
+                            <label><input type="checkbox" id="permTrending"> Manage Trending</label>
+                            <label><input type="checkbox" id="permApps"> Approve Applications</label>
+                            <label><input type="checkbox" id="permTeam"> Manage Team</label>
+                        </div>
+
+                        <div style="margin-top: 40px; display: flex; gap: 15px;">
+                            <button type="submit" class="cta-button" style="flex: 2;">Save Profile Changes</button>
+                            <button type="button" onclick="closeMemberProfileModal()"
+                                style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
