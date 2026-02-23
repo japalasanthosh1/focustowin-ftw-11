@@ -1376,9 +1376,30 @@ ul.mobile-nav-links li:last-child a.mobile-nav-link.cta-button {
     .video-info {
         border-radius: 0 0 12px 12px;
         padding: 30px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .video-info h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+
+    .video-info p {
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+        line-height: 1.4;
+    }
+
+    .video-info .cta-button {
+        width: 100%;
+        margin-bottom: 10px;
     }
 
     #openGalleryBtn {
-        margin-bottom: 20px;
+        margin-bottom: 0;
     }
 }
