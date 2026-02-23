@@ -1183,16 +1183,28 @@ select option {
 
     /* Typography Adjustments */
     h1.hero-title {
-        font-size: 3rem;
-        letter-spacing: -1px;
+        font-size: 2.5rem;
+        /* Reduced from 3rem to prevent clumsy wrapping */
+        letter-spacing: -2px;
+        line-height: 1.1;
+        margin-bottom: 10px;
     }
 
     h2 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        /* Reduced from 2rem */
+        line-height: 1.2;
     }
 
     p {
+        font-size: 1rem;
+        /* Slightly smaller base body text */
+        line-height: 1.5;
+    }
+
+    .hero-subtitle {
         font-size: 1.1rem;
+        margin-bottom: 20px;
     }
 
     /* Navigation */
@@ -1330,18 +1342,19 @@ select option {
     display: block;
 }
 
-.mobile-nav-link.cta-button {
+ul.mobile-nav-links li a.mobile-nav-link.cta-button {
     font-size: 1.2rem;
     display: inline-block;
     color: #000 !important;
-    /* Force black text on the white Join background */
-    background: #fff;
+    background: #fff !important;
     padding: 12px 30px;
+    border: none;
 }
 
-.mobile-nav-link:last-child {
+ul.mobile-nav-links li:last-child a.mobile-nav-link.cta-button {
     color: #fff !important;
-    /* Login button gets white text */
+    background: transparent !important;
+    border: 1px solid #ff1a1a;
 }
 
 .mobile-nav-link:hover {

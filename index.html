@@ -107,14 +107,16 @@
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                     </div>
-                    <div style="text-align: center; margin-top: 20px;"><button class="cta-button" id="openGalleryBtn"
-                            style="background: rgba(255,255,255,0.05); color: #fff; width: auto; padding: 10px 30px;">View
-                            All Featured Videos</button></div>
                     <div class="video-info">
                         <h3>Trending Raw Talk</h3>
                         <p>Watch our featured community highlight.</p>
-                        <a id="dynamicYoutubeLink" href="https://youtu.be/9VlvbpXwLJs" target="_blank"
-                            class="cta-button">Watch on YT</a>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                            <a id="dynamicYoutubeLink" href="https://youtu.be/9VlvbpXwLJs" target="_blank"
+                                class="cta-button">Watch on YT</a>
+                            <button class="cta-button" id="openGalleryBtn"
+                                style="background: rgba(255,255,255,0.05); color: #fff; width: 100%; padding: 10px 30px;">View
+                                Other Videos</button>
+                        </div>
                     </div>
                 </div>
                 <p class="video-disclaimer">* Disclaimer: The video above is a suggestion for gaining growth insights
