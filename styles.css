@@ -597,10 +597,7 @@ p {
     color: #fff;
 }
 
-.trend-card.highlight {
-    background: rgba(255, 51, 51, 0.1);
-    border: 1px solid rgba(255, 51, 51, 0.2);
-}
+
 
 /* Featured Video Section */
 .featured-video-card {

@@ -233,17 +233,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             const bgImage = item.imageUrl ? `url('${item.imageUrl}')` : 'linear-gradient(45deg, #111, #222)';
 
                             container.innerHTML += `
-                                <a href="${item.url}" target="_blank" class="trend-card ${hlClass}" style="text-decoration: none; overflow: hidden; display: flex; flex-direction: column; padding: 0;">
-                                    <div style="height: 160px; width: 100%; background: ${bgImage} center/cover no-repeat; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative;">
-                                         <span class="status-badge" style="position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2);">${item.tag}</span>
+                                <a href="${item.url}" target="_blank" class="trend-card ${hlClass}" style="text-decoration: none; color: inherit; overflow: hidden; display: flex; flex-direction: column; padding: 0;">
+                                    <div style="height: 160px; width: 100%; background: ${bgImage} center/cover no-repeat; border-bottom: 1px solid rgba(255,255,255,0.05); border-radius: 20px 20px 0 0; position: relative;">
+                                         <span class="status-badge" style="position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2); color: #fff;">${item.tag}</span>
                                     </div>
                                     <div style="padding: 25px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
                                         <div>
-                                            <h3 style="margin-bottom: 10px; font-size: 1.2rem;">${item.title || 'View Link'}</h3>
+                                            <h3 style="margin-bottom: 10px; font-size: 1.2rem; color: #fff;">${item.title || 'View Link'}</h3>
                                             <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${item.description || item.url}</p>
                                         </div>
                                         <div style="display: flex; justify-content: flex-end;">
-                                            <div class="card-action">Read More →</div>
+                                            <div class="card-action" style="color: var(--accent-color); font-weight: bold; font-size: 0.9rem;">Read More →</div>
                                         </div>
                                     </div>
                                 </a>
