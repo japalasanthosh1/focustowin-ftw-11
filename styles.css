@@ -1158,14 +1158,33 @@ select option {
         padding: 0 20px;
     }
 
+    .navbar-container {
+        padding-top: 20px;
+    }
+
+    .island-nav {
+        padding: 10px 20px;
+        gap: 20px;
+        width: 90%;
+        max-width: 400px;
+        justify-content: space-between;
+    }
+
     .chapter {
         padding: 40px 20px;
         min-height: auto;
     }
 
     #intro {
-        padding-top: 15vh;
+        padding-top: 120px;
+        /* Explicit top padding to clear the 80px navbar area */
+        padding-bottom: 60px;
         min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        /* Centers the content wrapper within the remaining space */
+        align-items: center;
     }
 
     .vertical-layout {
