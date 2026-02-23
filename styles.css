@@ -1333,8 +1333,39 @@ select option {
 .mobile-nav-link.cta-button {
     font-size: 1.2rem;
     display: inline-block;
+    color: #000 !important;
+    /* Force black text on the white Join background */
+    background: #fff;
+    padding: 12px 30px;
+}
+
+.mobile-nav-link:last-child {
+    color: #fff !important;
+    /* Login button gets white text */
 }
 
 .mobile-nav-link:hover {
     color: var(--accent-color);
+}
+
+/* Specific Video Card Fixes for Mobile */
+@media (max-width: 900px) {
+    .featured-video-card {
+        flex-direction: column;
+    }
+
+    .video-container {
+        border-radius: 12px 12px 0 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .video-info {
+        border-radius: 0 0 12px 12px;
+        padding: 30px 20px;
+    }
+
+    #openGalleryBtn {
+        margin-bottom: 20px;
+    }
 }
