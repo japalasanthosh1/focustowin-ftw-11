@@ -311,6 +311,103 @@
             cursor: pointer;
             font-size: 0.85rem;
         }
+
+        /* Mobile Responsiveness for Admin Dashboard */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 20px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                margin-bottom: 0;
+            }
+
+            .sidebar-logo {
+                margin-bottom: 20px;
+                font-size: 1.5rem;
+            }
+
+            .nav-menu {
+                flex-direction: row;
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 10px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .nav-item {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .sidebar-footer {
+                margin-top: 15px;
+                padding-top: 15px;
+            }
+
+            .dashboard-main {
+                width: 100%;
+                height: auto;
+                padding: 20px;
+                overflow-y: visible;
+            }
+
+            .dash-bg {
+                left: 0;
+                width: 100%;
+            }
+
+            .page-header {
+                margin-bottom: 30px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 20px !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .glass-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-content {
+                width: 95% !important;
+                margin: 20px auto !important;
+                padding: 20px !important;
+            }
+
+            .permissions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 

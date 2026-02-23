@@ -37,7 +37,11 @@
     <header class="navbar-container">
         <nav class="island-nav">
             <div class="logo">FTW.</div>
-            <div class="mobile-menu-btn"><span></span><span></span></div>
+            <div class="mobile-menu-btn" id="mobileMenuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
             <ul class="nav-links">
                 <li><a href="#intro" class="active">Start</a></li>
                 <li><a href="#vision">Vision</a></li>
@@ -50,6 +54,22 @@
             <a href="login.html" class="cta-button">Login</a>
         </div>
     </header>
+
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay">
+        <div class="mobile-nav-close" id="mobileNavClose">&times;</div>
+        <ul class="mobile-nav-links">
+            <li><a href="#intro" class="mobile-nav-link">Start</a></li>
+            <li><a href="#vision" class="mobile-nav-link">Vision</a></li>
+            <li><a href="#network" class="mobile-nav-link">Network</a></li>
+            <li><a href="#tech" class="mobile-nav-link">Tech</a></li>
+            <li><a href="#join" class="mobile-nav-link cta-button"
+                    style="margin-top: 20px; text-align: center;">Join</a></li>
+            <li><a href="login.html" class="mobile-nav-link cta-button"
+                    style="background: transparent; border: 1px solid #ff1a1a; margin-top: 10px; text-align: center;">Login</a>
+            </li>
+        </ul>
+    </div>
 
     <!-- Main Scroll Container -->
     <main class="scroll-container">
