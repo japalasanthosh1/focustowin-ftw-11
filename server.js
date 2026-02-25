@@ -493,10 +493,13 @@ app.get('/api/community/users/:id', authMiddleware, roleMiddleware(['super_admin
 
 app.put('/api/community/users/:id', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead']), async (req, res) => {
     try {
-        const { role, isActive, organization } = req.body;
+        const { role, isActive, organization, permissions } = req.body;
+        const updateData = { role, isActive, organization };
+        if (permissions) updateData.permissions = permissions;
+
         const updated = await User.findByIdAndUpdate(
             req.params.id,
-            { role, isActive, organization },
+            updateData,
             { returnDocument: 'after' }
         ).select('-passkey');
         res.json(updated);
@@ -589,9 +592,25 @@ app.post('/api/tasks', authMiddleware, roleMiddleware(['super_admin', 'co_lead',
 
 app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
     try {
-        const { status } = req.body;
-        const updated = await Task.findByIdAndUpdate(req.params.id, { status }, { returnDocument: 'after' });
+        const { status, title, description, priority, dueDate, assignedTo, collegeId } = req.body;
+        const updateData = {};
+        if (status) updateData.status = status;
+        if (title) updateData.title = title;
+        if (description) updateData.description = description;
+        if (priority) updateData.priority = priority;
+        if (dueDate) updateData.dueDate = dueDate;
+        if (assignedTo) updateData.assignedTo = assignedTo;
+        if (collegeId) updateData.collegeId = collegeId;
+
+        const updated = await Task.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
         res.json(updated);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/tasks/:id', authMiddleware, async (req, res) => {
+    try {
+        await Task.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Task deleted successfully' });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

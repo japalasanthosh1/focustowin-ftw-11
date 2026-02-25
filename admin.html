@@ -1229,27 +1229,12 @@
                 `;
             }
 
-            // 2. Coordinator Management (College Lead, Co-Lead, or Super Admin)
-            if (['super_admin', 'co_lead', 'college_lead'].includes(user.role)) {
-                html += `
-                    <div class="data-section">
-                        <h2 style="color: var(--accent-color);">Manage Coordinators</h2>
-                        <form onsubmit="handleAddCoordinator(event)" style="display: flex; gap: 10px; margin-top: 15px;">
-                            <input type="text" id="coordName" placeholder="Name" required style="padding: 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; flex: 1;">
-                            <input type="text" id="coordId" placeholder="FTW ID" required style="padding: 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; flex: 1;">
-                            <button type="submit" class="cta-button">Invite Coordinator</button>
-                        </form>
-                        <div id="coordinatorsList" style="margin-top: 20px; color: var(--text-secondary);">Loading members...</div>
-                    </div>
-                `;
-            }
-
             // 3. Task Board
             html += `
                 <div class="data-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2 style="color: var(--accent-color);">Task Board (Kanban)</h2>
-                        ${!['member'].includes(user.role) ? '<button onclick="promptNewTask()" class="cta-button" style="padding: 5px 15px;">+ Create Task</button>' : ''}
+                        ${!['member'].includes(user.role) ? '<button onclick="openTaskModal()" class="cta-button" style="padding: 5px 15px;">+ Create Task</button>' : ''}
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                         <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px;">
@@ -1271,9 +1256,6 @@
             container.innerHTML = html;
 
             loadTasks();
-            if (['super_admin', 'co_lead', 'college_lead'].includes(user.role)) loadCoordinators();
-            loadTasks();
-            if (['super_admin', 'co_lead', 'college_lead'].includes(user.role)) loadCoordinators();
             if (['super_admin', 'co_lead', 'executive_lead'].includes(user.role)) {
                 loadDirectory();
                 populateCollegeSelect();
@@ -1387,37 +1369,7 @@
             } catch (err) { console.error(err); }
         }
 
-        async function handleAddCoordinator(e) {
-            e.preventDefault();
-            try {
-                const payload = {
-                    name: document.getElementById('coordName').value,
-                    teamId: document.getElementById('coordId').value,
-                    passkey: 'FTW@2026',
-                };
-                const res = await fetchWithAuth('/api/community/coordinators', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    loadCoordinators();
-                    e.target.reset();
-                } else alert((await res.json()).error);
-            } catch (err) { console.error(err); }
-        }
 
-        async function loadCoordinators() {
-            try {
-                const res = await fetchWithAuth('/api/community/coordinators');
-                const data = await res.json();
-                document.getElementById('coordinatorsList').innerHTML = data.map(c =>
-                    `<div style="padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 5px;">
-                        <strong>${c.name}</strong> (${c.teamId})
-                     </div>`
-                ).join('') || 'No coordinators assigned yet.';
-            } catch (err) { console.error(err); }
-        }
 
         async function loadTasks() {
             try {
@@ -1433,17 +1385,27 @@
                     matches.forEach(t => {
                         const dateStr = t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'No due date';
 
-                        let buttons = '';
-                        if (status === 'todo') buttons = `<button onclick="updateTaskStatus('${t._id}', 'in-progress')" style="background:transparent; border:1px solid #0ff; color:#0ff; border-radius:4px; cursor:pointer;">Start</button>`;
-                        else if (status === 'in-progress') buttons = `<button onclick="updateTaskStatus('${t._id}', 'done')" style="background:transparent; border:1px solid #0f0; color:#0f0; border-radius:4px; cursor:pointer;">Complete</button>`;
+                        let actionButtons = '';
+                        if (status === 'todo') actionButtons = `<button onclick="updateTaskStatus('${t._id}', 'in-progress')" style="background:transparent; border:1px solid #0ff; color:#0ff; border-radius:4px; padding: 2px 8px; cursor:pointer; font-size: 0.7rem;">Start</button>`;
+                        else if (status === 'in-progress') actionButtons = `<button onclick="updateTaskStatus('${t._id}', 'done')" style="background:transparent; border:1px solid #0f0; color:#0f0; border-radius:4px; padding: 2px 8px; cursor:pointer; font-size: 0.7rem;">Complete</button>`;
+
+                        const adminControls = `
+                            <div style="display: flex; gap: 5px;">
+                                <span onclick="openTaskModal('${t._id}')" style="cursor: pointer; opacity: 0.7;">✏️</span>
+                                <span onclick="deleteTask('${t._id}')" style="cursor: pointer; opacity: 0.7;">🗑️</span>
+                            </div>
+                        `;
 
                         cont.innerHTML += `
-                            <div style="padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
-                                <h4 style="margin: 0; font-size: 0.95rem;">${t.title}</h4>
+                            <div style="padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${t.title}</h4>
+                                    ${adminControls}
+                                </div>
                                 <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 5px 0;">${t.description || ''}</p>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.75rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.7rem;">
                                     <span style="color: #FFA500;">📅 ${dateStr}</span>
-                                    ${buttons}
+                                    ${actionButtons}
                                 </div>
                             </div>
                         `;
@@ -1452,15 +1414,63 @@
             } catch (err) { console.error(err); }
         }
 
-        async function promptNewTask() {
-            const title = prompt("Task Title:");
-            if (!title) return;
+        async function openTaskModal(taskId = null) {
+            const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+            const res = await fetchWithAuth('/api/colleges');
+            const colleges = await res.json();
+            const collegeSelect = document.getElementById('taskTargetCollege');
+            collegeSelect.innerHTML = '<option value="">All Community / Personal</option>';
+            colleges.forEach(c => { collegeSelect.innerHTML += `<option value="${c._id}">${c.name}</option>`; });
+
+            if (taskId) {
+                // Edit Mode
+                const taskRes = await fetchWithAuth(`/api/tasks/${taskId}`);
+                const task = await taskRes.json();
+                document.getElementById('taskId').value = task._id;
+                document.getElementById('taskTitle').value = task.title;
+                document.getElementById('taskDesc').value = task.description || '';
+                document.getElementById('taskTargetCollege').value = task.collegeId || '';
+                document.getElementById('taskDueDate').value = task.dueDate ? task.dueDate.split('T')[0] : '';
+                document.getElementById('taskModalTitle').innerText = 'Edit System Task';
+            } else {
+                // New Mode
+                document.getElementById('taskForm').reset();
+                document.getElementById('taskId').value = '';
+                document.getElementById('taskModalTitle').innerText = 'Create System Task';
+            }
+            document.getElementById('taskModal').style.display = 'flex';
+        }
+
+        async function handleTaskSubmit(e) {
+            e.preventDefault();
+            const taskId = document.getElementById('taskId').value;
+            const payload = {
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDesc').value,
+                collegeIdInput: document.getElementById('taskTargetCollege').value || null,
+                dueDate: document.getElementById('taskDueDate').value
+            };
+
+            const url = taskId ? `/api/tasks/${taskId}` : '/api/tasks';
+            const method = taskId ? 'PUT' : 'POST';
+
             try {
-                const res = await fetchWithAuth('/api/tasks', {
-                    method: 'POST',
+                const res = await fetchWithAuth(url, {
+                    method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, status: 'todo' })
+                    body: JSON.stringify(payload)
                 });
+                if (res.ok) {
+                    document.getElementById('taskModal').style.display = 'none';
+                    loadTasks();
+                } else alert((await res.json()).error);
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm("Are you sure you want to delete this task?")) return;
+            try {
+                const res = await fetchWithAuth(`/api/tasks/${id}`, { method: 'DELETE' });
                 if (res.ok) loadTasks();
             } catch (err) { console.error(err); }
         }
@@ -1489,6 +1499,13 @@
                 document.getElementById('editUserOrg').value = user.collegeId ? user.collegeId.name : (user.organization || '');
                 document.getElementById('editUserActive').value = user.isActive.toString();
 
+                // Set permissions checkboxes
+                const perms = user.permissions || {};
+                document.getElementById('perm-videos').checked = !!perms.canManageVideos;
+                document.getElementById('perm-events').checked = !!perms.canManageEvents;
+                document.getElementById('perm-toprated').checked = !!perms.canManageTopRated;
+                document.getElementById('perm-apps').checked = !!perms.canApproveApps;
+
                 document.getElementById('adminProfileModal').style.display = 'flex';
             } catch (err) {
                 console.error(err);
@@ -1502,7 +1519,13 @@
             const payload = {
                 role: document.getElementById('editUserRole').value,
                 organization: document.getElementById('editUserOrg').value,
-                isActive: document.getElementById('editUserActive').value === 'true'
+                isActive: document.getElementById('editUserActive').value === 'true',
+                permissions: {
+                    canManageVideos: document.getElementById('perm-videos').checked,
+                    canManageEvents: document.getElementById('perm-events').checked,
+                    canManageTopRated: document.getElementById('perm-toprated').checked,
+                    canApproveApps: document.getElementById('perm-apps').checked
+                }
             };
 
             try {
@@ -1580,6 +1603,18 @@
                     </select>
                 </div>
 
+                <div style="margin-top: 5px;">
+                    <label
+                        style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 10px;">Operational
+                        Permissions</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="permissions-grid">
+                        <label><input type="checkbox" id="perm-videos"> Videos</label>
+                        <label><input type="checkbox" id="perm-events"> Events</label>
+                        <label><input type="checkbox" id="perm-toprated"> Trending</label>
+                        <label><input type="checkbox" id="perm-apps"> Apps</label>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button type="submit" class="cta-button" style="flex: 1;">Save Changes</button>
                 </div>
@@ -1587,7 +1622,45 @@
         </div>
     </div>
 
-</body>
+    <!-- Task Creation/Edit Modal -->
+    <div id="taskModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; justify-content: center; align-items: center;">
+        <div class="modal-content"
+            style="background: #111; padding: 30px; border-radius: 12px; width: 500px; max-width: 90%; border: 1px solid rgba(255,255,255,0.1); position: relative;">
+            <span onclick="document.getElementById('taskModal').style.display='none'"
+                style="position: absolute; right: 20px; top: 20px; font-size: 1.5rem; cursor: pointer; color: #fff;">&times;</span>
+            <h2 id="taskModalTitle" style="margin-bottom: 20px; color: var(--accent-color);">Create Task</h2>
+            <form id="taskForm" onsubmit="handleTaskSubmit(event)"
+                style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" id="taskId">
+                <input type="text" id="taskTitle" placeholder="Task Title" required
+                    style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                <textarea id="taskDesc" placeholder="Detailed Description..." rows="4"
+                    style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;"></textarea>
 
+                <div>
+                    <label
+                        style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 5px;">Target
+                        College (Assignment Audience)</label>
+                    <select id="taskTargetCollege"
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <option value="">All Community / Personal</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 5px;">Due
+                        Date</label>
+                    <input type="date" id="taskDueDate"
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; color-scheme: dark;">
+                </div>
+
+                <button type="submit" class="cta-button" style="margin-top: 10px;">Save Task</button>
+            </form>
+        </div>
+    </div>
+
+</body>
 
 </html>
