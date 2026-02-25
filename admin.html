@@ -687,86 +687,60 @@
             </header>
 
             <div style="display: flex; flex-direction: column; gap: 40px;">
-                <!-- Section 1: Team Management -->
-                <div style="display: grid; grid-template-columns: 1fr 2.5fr; gap: 40px;">
-                    <!-- Add Team Member Form -->
-                    <div class="data-section">
-                        <h2 style="margin-bottom: 20px;">Invite Team Member</h2>
-                        <form id="addTeamForm" style="display: flex; flex-direction: column; gap: 15px;">
-                            <input type="text" id="teamName" placeholder="Full Name" required
-                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-
-                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <label style="color: var(--text-secondary); font-size: 0.85rem;">Role</label>
-                                <select id="teamRole" required onchange="handleRoleChange()"
-                                    style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                                    <option value="coordinator">Coordinators</option>
-                                    <option value="community_co_lead">Community Co lead</option>
-                                    <option value="college_lead">College lead</option>
-                                    <option value="core_team">Core team</option>
-                                    <option value="super_admin">Super Admin</option>
-                                </select>
-                            </div>
-
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="text" id="teamUserId" placeholder="Unique Team ID" required
-                                    style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                                <button type="button" id="autoIdBtn" onclick="autoFetchTeamId()"
-                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;">Auto-Gen</button>
-                            </div>
-
-                            <input type="text" id="teamPasskey" placeholder="Initial Passkey" required
-                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                            <select id="teamOrg" required
-                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                                <option value="">Loading Colleges...</option>
-                            </select>
-
-
-
-                            <button type="submit" class="cta-button">Invite to Team</button>
-                            <div id="teamMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
-                        </form>
-                    </div>
-
-                    <!-- Team Hierarchy List -->
-                    <div class="data-section">
-                        <h2 style="margin-bottom: 20px;">Organization Hierarchy</h2>
-                        <div id="teamHierarchyContainer">
-                            <!-- Grouped team members injected here -->
-                            <p style="color: var(--text-secondary); text-align: center;">Loading team structure...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section 1.5: Manage Colleges -->
+                <!-- Section 1: Action Bar & Team Hierarchy -->
                 <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Manage Colleges</h2>
-                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 40px;">
-                        <!-- Add College -->
-                        <div>
-                            <form id="addCollegeForm" style="display: flex; flex-direction: column; gap: 15px;">
-                                <input type="text" id="newCollegeName" placeholder="e.g. Stanford University" required
-                                    style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                                <button type="submit" class="cta-button">Add Organization</button>
-                                <div id="collegeMsg"
-                                    style="text-align: center; min-height: 20px; font-weight: bold; font-size: 0.9rem;">
-                                </div>
-                            </form>
+                    <div class="section-header" style="margin-bottom: 20px;">
+                        <h2>Organization Hierarchy</h2>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="cta-button" onclick="openInviteModal()"
+                                style="padding: 8px 16px; border-radius: 8px;">+ Invite Member</button>
+                            <button class="cta-button" onclick="openCollegesModal()"
+                                style="padding: 8px 16px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">Manage
+                                Colleges</button>
                         </div>
+                    </div>
 
-                        <!-- List Colleges -->
-                        <div>
-                            <ul id="collegesList"
-                                style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
-                                <li style="color: var(--text-secondary); text-align: center;">Loading colleges...</li>
-                            </ul>
-                        </div>
+                    <div id="teamHierarchyContainer">
+                        <!-- Grouped team members injected here -->
+                        <p style="color: var(--text-secondary); text-align: center;">Loading team structure...</p>
                     </div>
                 </div>
 
                 <!-- Section 2: Task Board -->
                 <div class="data-section">
+                    <input type="text" id="teamName" placeholder="Full Name" required
+                        style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label style="color: var(--text-secondary); font-size: 0.85rem;">Role</label>
+                        <select id="teamRole" required onchange="handleRoleChange()"
+                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <option value="coordinator">Coordinators</option>
+                            <option value="community_co_lead">Community Co lead</option>
+                            <option value="college_lead">College lead</option>
+                            <option value="core_team">Core team</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="teamUserId" placeholder="Unique Team ID" required
+                            style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <button type="button" id="autoIdBtn" onclick="autoFetchTeamId()"
+                            style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;">Auto-Gen</button>
+                    </div>
+
+                    <input type="text" id="teamPasskey" placeholder="Initial Passkey" required
+                        style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                    <select id="teamOrg" required
+                        style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <option value="">Loading Colleges...</option>
+                    </select>
+
+
+
+                    <button type="submit" class="cta-button">Invite to Team</button>
+                    <div id="teamMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
                     <div class="section-header">
                         <h2>Internal Task Board</h2>
                         <button class="cta-button" onclick="openTaskModal()"
@@ -822,74 +796,144 @@
                         </div>
                     </form>
                 </div>
-            </div>
-        </div>
 
-        <!-- TAB: MY PROFILE -->
-        <div id="tab-profile" class="admin-tab">
-            <header class="page-header">
-                <div>
-                    <h1>Profile Settings</h1>
-                    <p>Manage your professional identity and security settings.</p>
-                </div>
-            </header>
+                <!-- Invite Member Modal -->
+                <div id="inviteMemberModal" class="modal"
+                    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
+                    <div class="data-section" style="width: 500px;">
+                        <h2 style="margin-bottom: 20px;">Invite Team Member</h2>
+                        <form id="addTeamForm" style="display: flex; flex-direction: column; gap: 15px;">
+                            <input type="text" id="teamName" placeholder="Full Name" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
 
-            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;">
-                <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Change Password</h2>
-                    <form id="changePasswordForm" style="display: flex; flex-direction: column; gap: 15px;">
-                        <input type="password" id="currentPass" placeholder="Current Password" required
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                        <input type="password" id="newPass" placeholder="New Password" required
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                        <button type="submit" class="cta-button">Update Password</button>
-                        <div id="passMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
-                    </form>
-                </div>
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="color: var(--text-secondary); font-size: 0.85rem;">Role</label>
+                                <select id="teamRole" required onchange="handleRoleChange()"
+                                    style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                                    <option value="coordinator">Coordinators</option>
+                                    <option value="community_co_lead">Community Co lead</option>
+                                    <option value="college_lead">College lead</option>
+                                    <option value="core_team">Core team</option>
+                                    <option value="super_admin">Super Admin</option>
+                                </select>
+                            </div>
 
-                <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Your Organization</h2>
-                    <div
-                        style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-                        <p id="profileOrgDisplay"
-                            style="font-size: 1.1rem; color: var(--accent-color); font-weight: bold;">Loading...</p>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">This organization
-                            is assigned by your Lead or during first setup.</p>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="teamUserId" placeholder="Unique Team ID" required
+                                    style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                                <button type="button" id="autoIdBtn" onclick="autoFetchTeamId()"
+                                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;">Auto-Gen</button>
+                            </div>
+
+                            <input type="text" id="teamPasskey" placeholder="Initial Passkey" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <select id="teamOrg" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                                <option value="">Loading Colleges...</option>
+                            </select>
+
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button type="submit" class="cta-button" style="flex: 1;">Invite to Team</button>
+                                <button type="button" onclick="closeInviteModal()"
+                                    style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;">Cancel</button>
+                            </div>
+                            <div id="teamMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
+                        </form>
                     </div>
                 </div>
 
-                <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Professional Details</h2>
-                    <form id="updateProfileForm" style="display: flex; flex-direction: column; gap: 15px;">
-                        <p id="profileLockedMsg"
-                            style="display: none; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 10px;">
-                            <i class="fas fa-lock"></i> Professional details are locked after your one-time initial
-                            setup. Contact your Lead to make changes.
-                        </p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <input type="text" id="profPhone" placeholder="Phone Number"
-                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                            <input type="text" id="profSkills" placeholder="Skills (comma separated)"
-                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                        </div>
-                        <textarea id="profBio" placeholder="Tell us about yourself..." rows="4"
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;"></textarea>
-
-                        <h4 style="color: var(--text-secondary); margin-top: 10px;">Social Links</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
-                            <input type="text" id="linkGithub" placeholder="GitHub Username"
-                                style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
-                            <input type="text" id="linkLinkedin" placeholder="LinkedIn URL"
-                                style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
-                            <input type="text" id="linkTwitter" placeholder="Twitter Username"
-                                style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                <!-- Manage Colleges Modal -->
+                <div id="manageCollegesModal" class="modal"
+                    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
+                    <div class="data-section" style="width: 600px; max-height: 80vh; overflow-y: auto;">
+                        <div class="section-header">
+                            <h2 style="margin-bottom: 20px;">Manage Colleges</h2>
+                            <button class="cta-button" onclick="closeCollegesModal()"
+                                style="background: transparent; border: 1px solid rgba(255,255,255,0.2); padding: 5px 10px;">Close</button>
                         </div>
 
-                        <button type="submit" class="cta-button" style="margin-top: 10px;">Save Profile</button>
-                    </form>
+                        <form id="addCollegeForm" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <input type="text" id="newCollegeName" placeholder="e.g. Stanford University" required
+                                style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <button type="submit" class="cta-button">Add</button>
+                        </form>
+                        <div id="collegeMsg"
+                            style="text-align: center; min-height: 20px; font-weight: bold; font-size: 0.9rem;"></div>
+
+                        <ul id="collegesList"
+                            style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                            <li style="color: var(--text-secondary); text-align: center;">Loading colleges...</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- TAB: MY PROFILE -->
+            <div id="tab-profile" class="admin-tab">
+                <header class="page-header">
+                    <div>
+                        <h1>Profile Settings</h1>
+                        <p>Manage your professional identity and security settings.</p>
+                    </div>
+                </header>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;">
+                    <div class="data-section">
+                        <h2 style="margin-bottom: 20px;">Change Password</h2>
+                        <form id="changePasswordForm" style="display: flex; flex-direction: column; gap: 15px;">
+                            <input type="password" id="currentPass" placeholder="Current Password" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <input type="password" id="newPass" placeholder="New Password" required
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            <button type="submit" class="cta-button">Update Password</button>
+                            <div id="passMsg" style="text-align: center; min-height: 20px; font-weight: bold;"></div>
+                        </form>
+                    </div>
+
+                    <div class="data-section">
+                        <h2 style="margin-bottom: 20px;">Your Organization</h2>
+                        <div
+                            style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                            <p id="profileOrgDisplay"
+                                style="font-size: 1.1rem; color: var(--accent-color); font-weight: bold;">Loading...</p>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">This
+                                organization
+                                is assigned by your Lead or during first setup.</p>
+                        </div>
+                    </div>
+
+                    <div class="data-section">
+                        <h2 style="margin-bottom: 20px;">Professional Details</h2>
+                        <form id="updateProfileForm" style="display: flex; flex-direction: column; gap: 15px;">
+                            <p id="profileLockedMsg"
+                                style="display: none; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 10px;">
+                                <i class="fas fa-lock"></i> Professional details are locked after your one-time initial
+                                setup. Contact your Lead to make changes.
+                            </p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <input type="text" id="profPhone" placeholder="Phone Number"
+                                    style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                                <input type="text" id="profSkills" placeholder="Skills (comma separated)"
+                                    style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                            </div>
+                            <textarea id="profBio" placeholder="Tell us about yourself..." rows="4"
+                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;"></textarea>
+
+                            <h4 style="color: var(--text-secondary); margin-top: 10px;">Social Links</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                                <input type="text" id="linkGithub" placeholder="GitHub Username"
+                                    style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                                <input type="text" id="linkLinkedin" placeholder="LinkedIn URL"
+                                    style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                                <input type="text" id="linkTwitter" placeholder="Twitter Username"
+                                    style="padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
+                            </div>
+
+                            <button type="submit" class="cta-button" style="margin-top: 10px;">Save Profile</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
     </main>
 
@@ -1545,10 +1589,36 @@
 
                         const roleSection = document.createElement('div');
                         roleSection.style.marginBottom = '30px';
-                        roleSection.style.paddingLeft = '15px';
-                        roleSection.style.borderLeft = `3px solid ${roleColors[roleKey]}`;
 
-                        roleSection.innerHTML = `<h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">${roleTitleMap[roleKey]}</h4>`;
+                        // Hide Coordinators and Co-Leads by default inside a collapsible details tag
+                        const isCollapsible = roleKey === 'coordinator' || roleKey === 'community_co_lead';
+
+                        if (isCollapsible) {
+                            roleSection.innerHTML = `
+                                <details style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; cursor: pointer;">
+                                    <summary style="color: ${roleColors[roleKey]}; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; outline: none; display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-chevron-right details-arrow"></i> 
+                                        ${roleTitleMap[roleKey]} (${groupedMembers[roleKey].length})
+                                    </summary>
+                                    <div class="details-content" style="margin-top: 15px; border-left: 3px solid ${roleColors[roleKey]}; padding-left: 15px;">
+                                    </div>
+                                </details>
+                            `;
+                            // Style for details arrow animation
+                            if (!document.getElementById('detailsStyles')) {
+                                document.head.insertAdjacentHTML('beforeend', `
+                                <style id="detailsStyles">
+                                    details > summary { list-style: none; }
+                                    details > summary::-webkit-details-marker { display: none; }
+                                    details[open] summary .details-arrow { transform: rotate(90deg); transition: transform 0.2s; }
+                                    details summary .details-arrow { transition: transform 0.2s; }
+                                </style>`);
+                            }
+                        } else {
+                            roleSection.style.paddingLeft = '15px';
+                            roleSection.style.borderLeft = `3px solid ${roleColors[roleKey]}`;
+                            roleSection.innerHTML = `<h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">${roleTitleMap[roleKey]}</h4>`;
+                        }
 
                         const table = document.createElement('table');
                         table.className = 'glass-table';
@@ -1610,7 +1680,9 @@
                             `;
                             tbody.appendChild(tr);
                         });
-                        roleSection.appendChild(table);
+
+                        const containerToAppendTo = isCollapsible ? roleSection.querySelector('.details-content') : roleSection;
+                        containerToAppendTo.appendChild(table);
                         orgSection.appendChild(roleSection);
                     });
 
@@ -1620,18 +1692,33 @@
             } catch (err) { console.error(err); }
         }
 
+        // --- Modals Logic ---
+        function openInviteModal() { document.getElementById('inviteMemberModal').style.display = 'flex'; }
+        function closeInviteModal() { document.getElementById('inviteMemberModal').style.display = 'none'; }
+
+        function openCollegesModal() { document.getElementById('manageCollegesModal').style.display = 'flex'; }
+        function closeCollegesModal() { document.getElementById('manageCollegesModal').style.display = 'none'; }
+
+        // Close modals when clicking outside
+        window.onclick = function (event) {
+            if (event.target == document.getElementById('inviteMemberModal')) closeInviteModal();
+            if (event.target == document.getElementById('manageCollegesModal')) closeCollegesModal();
+            if (event.target == document.getElementById('taskModal')) closeTaskModal();
+            if (event.target == document.getElementById('memberProfileModal')) closeMemberProfileModal();
+        };
+
         document.getElementById('addTeamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const msg = document.getElementById('teamMsg');
-            msg.style.color = 'var(--text-secondary)';
-            msg.innerText = 'Inviting...';
+            const msgEl = document.getElementById('teamMsg');
+            msgEl.style.color = 'var(--text-secondary)';
+            msgEl.innerText = 'Inviting...';
 
             const payload = {
-                name: document.getElementById('teamName').value,
                 teamId: document.getElementById('teamUserId').value,
                 passkey: document.getElementById('teamPasskey').value,
-                organization: document.getElementById('teamOrg').value,
-                role: document.getElementById('teamRole').value
+                name: document.getElementById('teamName').value,
+                role: document.getElementById('teamRole').value,
+                organization: document.getElementById('teamOrg').value
             };
 
             try {
@@ -1640,17 +1727,27 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 if (res.ok) {
-                    msg.style.color = '#4CAF50';
-                    msg.innerText = 'Member Invited Successfully!';
+                    msgEl.style.color = '#4CAF50';
+                    msgEl.innerText = 'Member added!';
                     document.getElementById('addTeamForm').reset();
                     loadTeamTab();
+
+                    // Auto-close modal after slight delay
+                    setTimeout(() => {
+                        msgEl.innerText = '';
+                        closeInviteModal();
+                    }, 1000);
                 } else {
-                    const err = await res.json();
-                    msg.style.color = '#ff3333';
-                    msg.innerText = err.error || 'Invitation Failed';
+                    const errObj = await res.json();
+                    msgEl.style.color = '#FF1A1A';
+                    msgEl.innerText = errObj.error || 'Failed to add member.';
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                msgEl.style.color = '#FF1A1A';
+                msgEl.innerText = 'Failed to invite.';
+            }
         });
 
         function handleRoleChange() {

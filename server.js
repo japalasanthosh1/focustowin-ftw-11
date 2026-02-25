@@ -130,7 +130,7 @@ app.put('/api/applications/:id/status', authMiddleware, async (req, res) => {
         const updatedApp = await Application.findByIdAndUpdate(
             req.params.id,
             { status },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!updatedApp) return res.status(404).json({ error: 'Application not found' });
@@ -282,7 +282,7 @@ app.put('/api/team/:id/permissions', authMiddleware, async (req, res) => {
         if (organization) updateData.organization = organization;
         if (typeof isActive !== 'undefined') updateData.isActive = isActive;
 
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
         if (!updatedUser) return res.status(404).json({ error: 'User not found' });
         res.json(updatedUser);
     } catch (err) {
@@ -293,7 +293,7 @@ app.put('/api/team/:id/permissions', authMiddleware, async (req, res) => {
 app.put('/api/team/:id/update-id', authMiddleware, async (req, res) => {
     try {
         const { teamId } = req.body;
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, { teamId }, { new: true });
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, { teamId }, { returnDocument: 'after' });
         if (!updatedUser) return res.status(404).json({ error: 'User not found' });
         res.json(updatedUser);
     } catch (err) {
@@ -320,7 +320,7 @@ app.put('/api/team/:id', authMiddleware, async (req, res) => {
         // (use /api/profile/password or similar instead)
         delete updateData.passkey;
 
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
         if (!updatedUser) return res.status(404).json({ error: 'User not found' });
         res.json(updatedUser);
     } catch (err) {
@@ -352,7 +352,7 @@ app.post('/api/profile/complete', authMiddleware, async (req, res) => {
 
         if (organization) updateData.organization = organization;
 
-        const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
+        const user = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after' });
         res.json({ message: 'Profile setup complete!', user });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -431,7 +431,7 @@ app.post('/api/tasks', authMiddleware, async (req, res) => {
 
 app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
     try {
-        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
         if (!updatedTask) return res.status(404).json({ error: 'Task not found' });
         res.json(updatedTask);
     } catch (err) {
@@ -584,7 +584,7 @@ app.put('/api/toprated/:id', authMiddleware, async (req, res) => {
         const updated = await TopRated.findByIdAndUpdate(
             req.params.id,
             { tag, url, title, description, imageUrl, highlight },
-            { new: true }
+            { returnDocument: 'after' }
         );
         res.json(updated);
     } catch (err) {
