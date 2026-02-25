@@ -4,7 +4,10 @@ const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { User, Application, Event, Video, TopRated, College } = require('./models');
+const {
+    User, Application, Event, Video, TopRated,
+    College, CoreTeamAssignment, CoordinatorAssignment, Task, Report
+} = require('./models');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ftw_super_secret_key_2026';
 
@@ -20,6 +23,16 @@ const authMiddleware = (req, res, next) => {
     } catch (err) {
         res.status(400).json({ error: 'Invalid token.' });
     }
+};
+
+// Middleware to verify Role
+const roleMiddleware = (allowedRoles) => {
+    return (req, res, next) => {
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({ error: 'Access denied. Insufficient permissions.' });
+        }
+        next();
+    };
 };
 
 const metascraper = require('metascraper')([
@@ -65,8 +78,7 @@ mongoose.connect(MONGO_URI)
                         canManageVideos: true,
                         canManageEvents: true,
                         canManageTopRated: true,
-                        canApproveApps: true,
-                        canManageTeam: true
+                        canApproveApps: true
                     }
                 });
                 await admin.save();
@@ -77,19 +89,6 @@ mongoose.connect(MONGO_URI)
             if (videoCount === 0) {
                 console.log('Seeding default Featured Video...');
                 await new Video({ title: 'FTW Introduction', youtubeId: '9VlvbpXwLJs', priority: 1 }).save();
-            }
-
-            const collegeCount = await College.countDocuments();
-            if (collegeCount === 0) {
-                console.log('Seeding default Colleges...');
-                const defaultColleges = [
-                    { name: 'Teegala Krishna Reddy Engineering College' },
-                    { name: 'TKR college of Engineering and Technology' },
-                    { name: 'Global Institute of Engineering and Technology' },
-                    { name: 'Headquarters' },
-                    { name: 'Other' }
-                ];
-                await College.insertMany(defaultColleges);
             }
         } catch (seedErr) {
             console.error('Error during database seeding:', seedErr);
@@ -130,7 +129,7 @@ app.put('/api/applications/:id/status', authMiddleware, async (req, res) => {
         const updatedApp = await Application.findByIdAndUpdate(
             req.params.id,
             { status },
-            { returnDocument: 'after' }
+            { new: true }
         );
 
         if (!updatedApp) return res.status(404).json({ error: 'Application not found' });
@@ -207,126 +206,6 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-// 5. Team Management API
-app.get('/api/team', authMiddleware, async (req, res) => {
-    try {
-        const { org, role } = req.query;
-        let query = {};
-
-        // Scoped access: if not super_admin, only see members of the same organization
-        if (role === 'college_lead' && org && org !== 'Headquarters') {
-            query.organization = org;
-        }
-
-        const team = await User.find(query).sort({ organization: 1, role: 1 });
-        res.json(team);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get('/api/team/next-coordinator-id', authMiddleware, async (req, res) => {
-    try {
-        // Find all users with teamId starting with FTWCCTG
-        const coordinators = await User.find({ teamId: /^FTWCCTG/ });
-
-        let maxIdNum = 160; // Base starting point if DB is empty or has less
-
-        coordinators.forEach(c => {
-            const match = c.teamId.match(/FTWCCTG2026(\d+)/);
-            if (match && match[1]) {
-                const num = parseInt(match[1], 10);
-                if (num > maxIdNum) maxIdNum = num;
-            }
-        });
-
-        const nextIdNum = maxIdNum + 1;
-        const nextIdStr = `FTWCCTG2026${nextIdNum.toString().padStart(3, '0')}`;
-
-        res.json({ nextId: nextIdStr });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/team', authMiddleware, async (req, res) => {
-    try {
-        const { teamId, passkey, name, role, organization } = req.body;
-        const newUser = new User({
-            teamId,
-            passkey,
-            name,
-            role,
-            organization,
-            permissions: {
-                canManageVideos: role === 'super_admin',
-                canManageEvents: role === 'super_admin',
-                canManageTopRated: role === 'super_admin',
-                canApproveApps: role === 'super_admin',
-                canManageTeam: role === 'super_admin'
-            }
-        });
-        await newUser.save();
-        res.status(201).json(newUser);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-});
-
-app.put('/api/team/:id/permissions', authMiddleware, async (req, res) => {
-    try {
-        const { permissions, role, organization, isActive } = req.body;
-        const updateData = {};
-        if (permissions) updateData.permissions = permissions;
-        if (role) updateData.role = role;
-        if (organization) updateData.organization = organization;
-        if (typeof isActive !== 'undefined') updateData.isActive = isActive;
-
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
-        if (!updatedUser) return res.status(404).json({ error: 'User not found' });
-        res.json(updatedUser);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.put('/api/team/:id/update-id', authMiddleware, async (req, res) => {
-    try {
-        const { teamId } = req.body;
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, { teamId }, { returnDocument: 'after' });
-        if (!updatedUser) return res.status(404).json({ error: 'User not found' });
-        res.json(updatedUser);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// General fetch by ID
-app.get('/api/team/:id', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id);
-        if (!user) return res.status(404).json({ error: 'User not found' });
-        res.json(user);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Comprehensive update
-app.put('/api/team/:id', authMiddleware, async (req, res) => {
-    try {
-        const updateData = req.body;
-        // Basic security: don't allow updating password through this endpoint 
-        // (use /api/profile/password or similar instead)
-        delete updateData.passkey;
-
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
-        if (!updatedUser) return res.status(404).json({ error: 'User not found' });
-        res.json(updatedUser);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
 // --- User Profile/Onboarding APIs ---
 app.post('/api/profile/complete', authMiddleware, async (req, res) => {
@@ -352,7 +231,7 @@ app.post('/api/profile/complete', authMiddleware, async (req, res) => {
 
         if (organization) updateData.organization = organization;
 
-        const user = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after' });
+        const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
         res.json({ message: 'Profile setup complete!', user });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -372,68 +251,6 @@ app.put('/api/profile/password', async (req, res) => {
         user.passkey = newPasskey;
         await user.save();
         res.json({ message: 'Passkey updated successfully' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.delete('/api/team/:id', authMiddleware, async (req, res) => {
-    try {
-        const deletedUser = await User.findByIdAndDelete(req.params.id);
-        if (!deletedUser) return res.status(404).json({ error: 'User not found' });
-        res.json({ message: 'Team member removed' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// 6. Announcements API
-app.get('/api/announcements', async (req, res) => {
-    try {
-        const announcements = await Announcement.find().populate('author', 'name').sort({ createdAt: -1 });
-        res.json(announcements);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/announcements', authMiddleware, async (req, res) => {
-    try {
-        const { content, authorId, priority } = req.body;
-        const newAnnouncement = new Announcement({ content, author: authorId, priority });
-        await newAnnouncement.save();
-        res.status(201).json(newAnnouncement);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-});
-
-// 7. Task Management API
-app.get('/api/tasks', authMiddleware, async (req, res) => {
-    try {
-        const tasks = await Task.find().populate('assignedTo', 'name teamId').sort({ createdAt: -1 });
-        res.json(tasks);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/tasks', authMiddleware, async (req, res) => {
-    try {
-        const { title, description, assignedTo, dueDate } = req.body;
-        const newTask = new Task({ title, description, assignedTo, dueDate });
-        await newTask.save();
-        res.status(201).json(newTask);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-});
-
-app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
-    try {
-        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
-        if (!updatedTask) return res.status(404).json({ error: 'Task not found' });
-        res.json(updatedTask);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -584,7 +401,7 @@ app.put('/api/toprated/:id', authMiddleware, async (req, res) => {
         const updated = await TopRated.findByIdAndUpdate(
             req.params.id,
             { tag, url, title, description, imageUrl, highlight },
-            { returnDocument: 'after' }
+            { new: true }
         );
         res.json(updated);
     } catch (err) {
@@ -601,46 +418,197 @@ app.delete('/api/toprated/:id', authMiddleware, async (req, res) => {
     }
 });
 
-// 8. Colleges API
-app.get('/api/colleges', async (req, res) => {
+// --- Community RBAC APIs ---
+
+// 1. Colleges
+app.get('/api/colleges', authMiddleware, async (req, res) => {
     try {
-        const colleges = await College.find().sort({ name: 1 });
+        const { role, id } = req.user;
+        let query = {};
+        if (role === 'core_team') {
+            const assignment = await CoreTeamAssignment.findOne({ userId: id });
+            if (assignment) {
+                query = { _id: { $in: assignment.assignedColleges } };
+            } else {
+                return res.json([]);
+            }
+        } else if (role === 'college_lead') {
+            query = { collegeLeadId: id };
+        } else if (role === 'coordinator' || role === 'member') {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+        // SuperAdmin & ExecLead see all
+        const colleges = await College.find(query).populate('collegeLeadId', 'name email teamId');
         res.json(colleges);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/colleges', authMiddleware, async (req, res) => {
+app.post('/api/colleges', authMiddleware, roleMiddleware(['super_admin']), async (req, res) => {
     try {
-        const { name } = req.body;
-        if (!name) return res.status(400).json({ error: 'College name is required' });
-
-        const existing = await College.findOne({ name });
-        if (existing) return res.status(400).json({ error: 'College already exists' });
-
-        const newCollege = new College({ name });
+        const { name, collegeLeadId } = req.body;
+        const newCollege = new College({ name, collegeLeadId, createdBy: req.user.id });
         await newCollege.save();
+
+        if (collegeLeadId) {
+            await User.findByIdAndUpdate(collegeLeadId, { role: 'college_lead', collegeId: newCollege._id });
+        }
         res.status(201).json(newCollege);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
-app.delete('/api/colleges/:id', authMiddleware, async (req, res) => {
+app.delete('/api/colleges/:id', authMiddleware, roleMiddleware(['super_admin']), async (req, res) => {
     try {
-        const college = await College.findById(req.params.id);
-        if (!college) return res.status(404).json({ error: 'College not found' });
-
-        // Prevent deleting structural defaults if needed, though 'Other/Headquarters' usually should remain
-        // But for full control, let's allow it based on the prompt's request for freedom
-
         await College.findByIdAndDelete(req.params.id);
-        res.json({ message: 'College removed' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+        // Cascade: deactivate users
+        await User.updateMany({ collegeId: req.params.id }, { isActive: false });
+        res.json({ message: 'College deleted and users deactivated' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+// 2. Hierarchy Management
+app.post('/api/community/users', authMiddleware, roleMiddleware(['super_admin']), async (req, res) => {
+    try {
+        const { name, email, passkey, role, teamId } = req.body;
+        const newUser = new User({ name, email, passkey, role, teamId });
+        await newUser.save();
+        res.status(201).json(newUser);
+    } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.get('/api/community/users', authMiddleware, roleMiddleware(['super_admin', 'executive_lead']), async (req, res) => {
+    try {
+        const users = await User.find({ role: { $ne: 'member' } }).populate('collegeId', 'name').select('-passkey');
+        res.json(users);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// 3. Coordinator Management
+app.get('/api/community/coordinators', authMiddleware, roleMiddleware(['college_lead', 'super_admin']), async (req, res) => {
+    try {
+        const { role, id } = req.user;
+        let query = {};
+        if (role === 'college_lead') {
+            const user = await User.findById(id);
+            if (!user.collegeId) return res.json([]);
+            query = { collegeId: user.collegeId, role: 'coordinator' };
+        } else {
+            query = { role: 'coordinator' };
+        }
+        const coords = await User.find(query).select('-passkey');
+        res.json(coords);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/community/coordinators', authMiddleware, roleMiddleware(['college_lead', 'super_admin']), async (req, res) => {
+    try {
+        const { name, email, passkey, teamId, collegeIdInput } = req.body;
+        let collegeId = collegeIdInput;
+
+        if (req.user.role === 'college_lead') {
+            const user = await User.findById(req.user.id);
+            collegeId = user.collegeId;
+        }
+
+        const newUser = new User({
+            name, email, passkey, teamId, role: 'coordinator', collegeId
+        });
+        await newUser.save();
+
+        await new CoordinatorAssignment({
+            userId: newUser._id,
+            collegeId: collegeId,
+            assignedBy: req.user.id
+        }).save();
+
+        res.status(201).json(newUser);
+    } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+// 4. Tasks (Kanban)
+app.get('/api/tasks', authMiddleware, async (req, res) => {
+    try {
+        const { role, id } = req.user;
+        const user = await User.findById(id);
+        let query = {};
+
+        if (role === 'coordinator' || role === 'college_lead') {
+            if (!user.collegeId) return res.json([]);
+            query = { collegeId: user.collegeId };
+        } else if (role === 'core_team') {
+            const assignment = await CoreTeamAssignment.findOne({ userId: id });
+            query = { collegeId: { $in: assignment ? assignment.assignedColleges : [] } };
+        }
+
+        const tasks = await Task.find(query).populate('assignedTo', 'name');
+        res.json(tasks);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/tasks', authMiddleware, roleMiddleware(['super_admin', 'executive_lead', 'core_team', 'college_lead', 'coordinator']), async (req, res) => {
+    try {
+        const { title, description, status, priority, dueDate, assignedTo, collegeIdInput } = req.body;
+        const user = await User.findById(req.user.id);
+
+        const collegeId = collegeIdInput || user.collegeId;
+        const newTask = new Task({
+            title, description, status, priority, dueDate, assignedTo, collegeId
+        });
+        await newTask.save();
+        res.status(201).json(newTask);
+    } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const updated = await Task.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        res.json(updated);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// 5. Weekly Reports
+app.get('/api/reports', authMiddleware, async (req, res) => {
+    try {
+        const { role, id } = req.user;
+        const user = await User.findById(id);
+        let query = {};
+
+        if (role === 'college_lead' || role === 'coordinator') {
+            if (!user.collegeId) return res.json([]);
+            query = { collegeId: user.collegeId };
+        } else if (role === 'core_team') {
+            const assignment = await CoreTeamAssignment.findOne({ userId: id });
+            query = { collegeId: { $in: assignment ? assignment.assignedColleges : [] } };
+        }
+
+        const reports = await Report.find(query).populate('authorId', 'name').populate('collegeId', 'name');
+        res.json(reports);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/reports', authMiddleware, roleMiddleware(['college_lead', 'coordinator']), async (req, res) => {
+    try {
+        const { content, metrics } = req.body;
+        const user = await User.findById(req.user.id);
+        const newReport = new Report({
+            authorId: user._id,
+            collegeId: user.collegeId,
+            content,
+            metrics
+        });
+        await newReport.save();
+        res.status(201).json(newReport);
+    } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.put('/api/reports/:id/status', authMiddleware, roleMiddleware(['super_admin', 'executive_lead', 'core_team']), async (req, res) => {
+    try {
+        const { status } = req.body;
+        const updated = await Report.findByIdAndUpdate(req.params.id, { status, reviewedBy: req.user.id }, { new: true });
+        res.json(updated);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 
 // Start Server
 app.listen(PORT, () => {
