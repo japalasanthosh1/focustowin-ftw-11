@@ -231,7 +231,7 @@ app.post('/api/profile/complete', authMiddleware, async (req, res) => {
 
         if (organization) updateData.organization = organization;
 
-        const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
+        const user = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after' });
         res.json({ message: 'Profile setup complete!', user });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -401,7 +401,7 @@ app.put('/api/toprated/:id', authMiddleware, async (req, res) => {
         const updated = await TopRated.findByIdAndUpdate(
             req.params.id,
             { tag, url, title, description, imageUrl, highlight },
-            { new: true }
+            { returnDocument: 'after' }
         );
         res.json(updated);
     } catch (err) {
@@ -479,6 +479,27 @@ app.get('/api/community/users', authMiddleware, roleMiddleware(['super_admin', '
     try {
         const users = await User.find({ role: { $ne: 'member' } }).populate('collegeId', 'name').select('-passkey');
         res.json(users);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Admin User Profile Management
+app.get('/api/community/users/:id', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead']), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).populate('collegeId', 'name').select('-passkey');
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/community/users/:id', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead']), async (req, res) => {
+    try {
+        const { role, isActive, organization } = req.body;
+        const updated = await User.findByIdAndUpdate(
+            req.params.id,
+            { role, isActive, organization },
+            { returnDocument: 'after' }
+        ).select('-passkey');
+        res.json(updated);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -569,7 +590,7 @@ app.post('/api/tasks', authMiddleware, roleMiddleware(['super_admin', 'co_lead',
 app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
     try {
         const { status } = req.body;
-        const updated = await Task.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        const updated = await Task.findByIdAndUpdate(req.params.id, { status }, { returnDocument: 'after' });
         res.json(updated);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -612,7 +633,7 @@ app.post('/api/reports', authMiddleware, roleMiddleware(['college_lead', 'coordi
 app.put('/api/reports/:id/status', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead', 'core_team']), async (req, res) => {
     try {
         const { status } = req.body;
-        const updated = await Report.findByIdAndUpdate(req.params.id, { status, reviewedBy: req.user.id }, { new: true });
+        const updated = await Report.findByIdAndUpdate(req.params.id, { status, reviewedBy: req.user.id }, { returnDocument: 'after' });
         res.json(updated);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });

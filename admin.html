@@ -1301,7 +1301,7 @@
 
                     tbody.innerHTML += `
                         <tr>
-                            <td><strong>${u.name}</strong></td>
+                            <td><a href="#" onclick="openProfileModal('${u._id}')" style="color: #fff; text-decoration: underline; cursor: pointer;"><strong>${u.name}</strong></a></td>
                             <td>${roleBadgeStr}</td>
                             <td style="font-family: monospace; color: var(--text-secondary);">${u.teamId}</td>
                             <td>${org || '-'}</td>
@@ -1437,6 +1437,51 @@
             } catch (err) { console.error(err); }
         }
 
+        async function openProfileModal(id) {
+            try {
+                const res = await fetchWithAuth(`/api/community/users/${id}`);
+                const user = await res.json();
+                if (user.error) return alert(user.error);
+
+                document.getElementById('editUserId').value = user._id;
+                document.getElementById('adminProfileModalName').innerText = user.name;
+                document.getElementById('adminProfileModalId').innerText = user.teamId;
+                document.getElementById('editUserRole').value = user.role;
+                document.getElementById('editUserOrg').value = user.collegeId ? user.collegeId.name : (user.organization || '');
+                document.getElementById('editUserActive').value = user.isActive.toString();
+
+                document.getElementById('adminProfileModal').style.display = 'flex';
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load profile.");
+            }
+        }
+
+        async function saveProfileChanges(e) {
+            e.preventDefault();
+            const id = document.getElementById('editUserId').value;
+            const payload = {
+                role: document.getElementById('editUserRole').value,
+                organization: document.getElementById('editUserOrg').value,
+                isActive: document.getElementById('editUserActive').value === 'true'
+            };
+
+            try {
+                const res = await fetchWithAuth(`/api/community/users/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    alert('Profile updated successfully!');
+                    document.getElementById('adminProfileModal').style.display = 'none';
+                    if (typeof loadDirectory !== 'undefined') loadDirectory();
+                } else {
+                    alert((await res.json()).error);
+                }
+            } catch (err) { console.error(err); }
+        }
+
         // Initialize Magnetic physics for dashboard buttons
         document.addEventListener('DOMContentLoaded', () => {
             // initMagneticButtons(); // Temporarily disabled or missing
@@ -1446,6 +1491,64 @@
         });
     </script>
 
+    <!-- Admin Profile Management Modal -->
+    <div id="adminProfileModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
+        <div class="modal-content"
+            style="background: #111; padding: 30px; border-radius: 12px; width: 500px; max-width: 90%; border: 1px solid rgba(255,255,255,0.1); position: relative;">
+            <span onclick="document.getElementById('adminProfileModal').style.display='none'"
+                style="position: absolute; right: 20px; top: 20px; font-size: 1.5rem; cursor: pointer; color: #fff;">&times;</span>
+            <h2 id="adminProfileModalName" style="margin-bottom: 5px; color: var(--accent-color);">Member Name</h2>
+            <p id="adminProfileModalId"
+                style="color: var(--text-secondary); margin-bottom: 20px; font-family: monospace;">FTW ID</p>
+
+            <form id="adminProfileForm" onsubmit="saveProfileChanges(event)"
+                style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" id="editUserId">
+
+                <div>
+                    <label
+                        style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 5px;">System
+                        Role</label>
+                    <select id="editUserRole" required
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <option value="super_admin">Super Admin</option>
+                        <option value="co_lead">Co-Lead</option>
+                        <option value="executive_lead">Executive Lead</option>
+                        <option value="core_team">Core Team</option>
+                        <option value="college_lead">College Lead</option>
+                        <option value="coordinator">Coordinator</option>
+                        <option value="member">Member</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 5px;">Organization
+                        / College</label>
+                    <input type="text" id="editUserOrg"
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                </div>
+
+                <div>
+                    <label
+                        style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 5px;">Account
+                        Access Status</label>
+                    <select id="editUserActive" required
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <option value="true">Active & Unlocked</option>
+                        <option value="false">Locked / Suspended</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" class="cta-button" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
+
 
 </html>
