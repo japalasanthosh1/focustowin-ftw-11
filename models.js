@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     teamId: { type: String, required: true, unique: true },
     passkey: { type: String, required: true },
     name: { type: String, required: true },
-    role: { type: String, enum: ['super_admin', 'lead', 'coordinator', 'core_team'], default: 'coordinator' },
+    role: { type: String, enum: ['super_admin', 'lead', 'co_lead', 'coordinator', 'core_team'], default: 'coordinator' },
     organization: { type: String, default: 'Headquarters' }, // e.g. "Stanford", "MIT"
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
@@ -112,4 +112,11 @@ const topRatedSchema = new mongoose.Schema({
 
 const TopRated = mongoose.model('TopRated', topRatedSchema);
 
-module.exports = { User, Application, Event, Video, TopRated };
+// --- College Model ---
+const collegeSchema = new mongoose.Schema({
+    name: { type: String, required: true, unique: true }
+}, { timestamps: true });
+
+const College = mongoose.model('College', collegeSchema);
+
+module.exports = { User, Application, Event, Video, TopRated, College };

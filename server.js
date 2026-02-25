@@ -4,7 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { User, Application, Event, Video, TopRated } = require('./models');
+const { User, Application, Event, Video, TopRated, College } = require('./models');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ftw_super_secret_key_2026';
 
@@ -77,6 +77,19 @@ mongoose.connect(MONGO_URI)
             if (videoCount === 0) {
                 console.log('Seeding default Featured Video...');
                 await new Video({ title: 'FTW Introduction', youtubeId: '9VlvbpXwLJs', priority: 1 }).save();
+            }
+
+            const collegeCount = await College.countDocuments();
+            if (collegeCount === 0) {
+                console.log('Seeding default Colleges...');
+                const defaultColleges = [
+                    { name: 'Teegala Krishna Reddy Engineering College' },
+                    { name: 'TKR college of Engineering and Technology' },
+                    { name: 'Global Institute of Engineering and Technology' },
+                    { name: 'Headquarters' },
+                    { name: 'Other' }
+                ];
+                await College.insertMany(defaultColleges);
             }
         } catch (seedErr) {
             console.error('Error during database seeding:', seedErr);
@@ -583,6 +596,47 @@ app.delete('/api/toprated/:id', authMiddleware, async (req, res) => {
     try {
         await TopRated.findByIdAndDelete(req.params.id);
         res.json({ message: 'Item deleted' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 8. Colleges API
+app.get('/api/colleges', async (req, res) => {
+    try {
+        const colleges = await College.find().sort({ name: 1 });
+        res.json(colleges);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/colleges', authMiddleware, async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ error: 'College name is required' });
+
+        const existing = await College.findOne({ name });
+        if (existing) return res.status(400).json({ error: 'College already exists' });
+
+        const newCollege = new College({ name });
+        await newCollege.save();
+        res.status(201).json(newCollege);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/colleges/:id', authMiddleware, async (req, res) => {
+    try {
+        const college = await College.findById(req.params.id);
+        if (!college) return res.status(404).json({ error: 'College not found' });
+
+        // Prevent deleting structural defaults if needed, though 'Other/Headquarters' usually should remain
+        // But for full control, let's allow it based on the prompt's request for freedom
+
+        await College.findByIdAndDelete(req.params.id);
+        res.json({ message: 'College removed' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
