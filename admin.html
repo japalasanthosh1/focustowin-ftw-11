@@ -700,10 +700,10 @@
                                 <label style="color: var(--text-secondary); font-size: 0.85rem;">Role</label>
                                 <select id="teamRole" required onchange="handleRoleChange()"
                                     style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                                    <option value="coordinator">Coordinator</option>
-                                    <option value="co_lead">College Co-Lead</option>
-                                    <option value="lead">College Lead</option>
-                                    <option value="core_team">Core Team</option>
+                                    <option value="coordinator">Coordinators</option>
+                                    <option value="community_co_lead">Community Co lead</option>
+                                    <option value="college_lead">College lead</option>
+                                    <option value="core_team">Core team</option>
                                     <option value="super_admin">Super Admin</option>
                                 </select>
                             </div>
@@ -1526,8 +1526,8 @@
                     orgSection.style.border = '1px solid rgba(255,255,255,0.05)';
                     orgSection.innerHTML = `<h3 style="color: var(--accent-color); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 25px; font-size: 1.4rem;"><i class="fas fa-building"></i> ${org} Directory</h3>`;
 
-                    const rolesOrdered = ['super_admin', 'core_team', 'lead', 'co_lead', 'coordinator'];
-                    const groupedMembers = { super_admin: [], core_team: [], lead: [], co_lead: [], coordinator: [] };
+                    const rolesOrdered = ['super_admin', 'core_team', 'college_lead', 'community_co_lead', 'coordinator'];
+                    const groupedMembers = { super_admin: [], core_team: [], college_lead: [], community_co_lead: [], coordinator: [] };
 
                     orgs[org].forEach(m => {
                         if (groupedMembers[m.role]) {
@@ -1540,8 +1540,8 @@
                     rolesOrdered.forEach(roleKey => {
                         if (groupedMembers[roleKey].length === 0) return;
 
-                        const roleTitleMap = { super_admin: 'Super Admins', core_team: 'Core Team', lead: 'College Leads', co_lead: 'College Co-Leads', coordinator: 'College Coordinators' };
-                        const roleColors = { super_admin: '#FF1A1A', core_team: '#FFA500', lead: '#4CAF50', co_lead: '#2196F3', coordinator: '#9E9E9E' };
+                        const roleTitleMap = { super_admin: 'Super Admins', core_team: 'Core Team', college_lead: 'College Leads', community_co_lead: 'Community Co leads', coordinator: 'Coordinators' };
+                        const roleColors = { super_admin: '#FF1A1A', core_team: '#FFA500', college_lead: '#4CAF50', community_co_lead: '#2196F3', coordinator: '#9E9E9E' };
 
                         const roleSection = document.createElement('div');
                         roleSection.style.marginBottom = '30px';
@@ -2022,10 +2022,10 @@
                         <div class="profile-field-group">
                             <label>Role</label>
                             <select id="editRole">
-                                <option value="coordinator">Coordinator</option>
-                                <option value="co_lead">College Co-Lead</option>
-                                <option value="lead">College Lead</option>
-                                <option value="core_team">Core Team</option>
+                                <option value="coordinator">Coordinators</option>
+                                <option value="community_co_lead">Community Co lead</option>
+                                <option value="college_lead">College lead</option>
+                                <option value="core_team">Core team</option>
                                 <option value="super_admin">Super Admin</option>
                             </select>
                         </div>

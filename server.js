@@ -214,7 +214,7 @@ app.get('/api/team', authMiddleware, async (req, res) => {
         let query = {};
 
         // Scoped access: if not super_admin, only see members of the same organization
-        if (role === 'lead' && org && org !== 'Headquarters') {
+        if (role === 'college_lead' && org && org !== 'Headquarters') {
             query.organization = org;
         }
 
