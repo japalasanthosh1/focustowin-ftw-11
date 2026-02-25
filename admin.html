@@ -1263,14 +1263,20 @@
         }
 
         async function populateCollegeSelect() {
-            const select = document.getElementById('assignCollege');
-            if (!select) return;
+            const selects = [document.getElementById('assignCollege'), document.getElementById('editUserOrg'), document.getElementById('taskTargetCollege')];
             try {
                 const res = await fetchWithAuth('/api/colleges');
                 const colleges = await res.json();
-                select.innerHTML = '<option value="">Select College / Organization...</option>';
-                colleges.forEach(c => {
-                    select.innerHTML += `<option value="${c._id}">${c.name}</option>`;
+
+                selects.forEach(select => {
+                    if (!select) return;
+                    const originalValue = select.value;
+                    const defaultText = select.id === 'taskTargetCollege' ? 'All Community / Personal' : 'Select College / Organization...';
+                    select.innerHTML = `<option value="">${defaultText}</option>`;
+                    colleges.forEach(c => {
+                        select.innerHTML += `<option value="${c._id}">${c.name}</option>`;
+                    });
+                    if (originalValue) select.value = originalValue;
                 });
             } catch (err) { console.error(err); }
         }
@@ -1415,13 +1421,7 @@
         }
 
         async function openTaskModal(taskId = null) {
-            const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
-            const res = await fetchWithAuth('/api/colleges');
-            const colleges = await res.json();
-            const collegeSelect = document.getElementById('taskTargetCollege');
-            collegeSelect.innerHTML = '<option value="">All Community / Personal</option>';
-            colleges.forEach(c => { collegeSelect.innerHTML += `<option value="${c._id}">${c.name}</option>`; });
-
+            await populateCollegeSelect();
             if (taskId) {
                 // Edit Mode
                 const taskRes = await fetchWithAuth(`/api/tasks/${taskId}`);
@@ -1496,7 +1496,7 @@
                 document.getElementById('adminProfileModalName').innerText = user.name;
                 document.getElementById('adminProfileModalId').innerText = user.teamId;
                 document.getElementById('editUserRole').value = user.role;
-                document.getElementById('editUserOrg').value = user.collegeId ? user.collegeId.name : (user.organization || '');
+                document.getElementById('editUserOrg').value = user.collegeId ? (user.collegeId._id || user.collegeId) : '';
                 document.getElementById('editUserActive').value = user.isActive.toString();
 
                 // Set permissions checkboxes
@@ -1518,7 +1518,7 @@
             const id = document.getElementById('editUserId').value;
             const payload = {
                 role: document.getElementById('editUserRole').value,
-                organization: document.getElementById('editUserOrg').value,
+                collegeId: document.getElementById('editUserOrg').value || null,
                 isActive: document.getElementById('editUserActive').value === 'true',
                 permissions: {
                     canManageVideos: document.getElementById('perm-videos').checked,
@@ -1588,8 +1588,10 @@
                     <label
                         style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 5px;">Organization
                         / College</label>
-                    <input type="text" id="editUserOrg"
+                    <select id="editUserOrg"
                         style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                        <option value="">Select College / Organization...</option>
+                    </select>
                 </div>
 
                 <div>
