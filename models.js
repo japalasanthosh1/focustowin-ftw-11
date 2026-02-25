@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, sparse: true, unique: true },
     passkey: { type: String, required: true },
     name: { type: String, required: true },
-    role: { type: String, enum: ['super_admin', 'executive_lead', 'core_team', 'college_lead', 'coordinator', 'member'], default: 'member' },
+    role: { type: String, enum: ['super_admin', 'co_lead', 'executive_lead', 'core_team', 'college_lead', 'coordinator', 'member'], default: 'member' },
     collegeId: { type: mongoose.Schema.Types.ObjectId, ref: 'College', default: null },
     assignedCoreId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     organization: { type: String, default: 'Headquarters' }, // e.g. "Stanford", "MIT"

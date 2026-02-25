@@ -1175,8 +1175,8 @@
             const container = document.getElementById('communityContent');
             let html = '';
 
-            // 1. Super Admin Tools
-            if (user.role === 'super_admin') {
+            // 1. Super Admin/Co-Lead Tools
+            if (['super_admin', 'co_lead'].includes(user.role)) {
                 html += `
                     <div class="data-section">
                         <h2 style="color: var(--accent-color);">Super Admin: Governance</h2>
@@ -1205,11 +1205,28 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="data-section" style="margin-top: 40px;">
+                        <h2 style="color: var(--accent-color); margin-bottom: 20px;">Global Community Directory</h2>
+                        <table class="glass-table">
+                            <thead>
+                                <tr>
+                                    <th>Member Name</th>
+                                    <th>System Role</th>
+                                    <th>FTW ID</th>
+                                    <th>College / Org</th>
+                                </tr>
+                            </thead>
+                            <tbody id="directoryTableBody">
+                                <tr><td colspan="4" style="text-align: center;">Loading directory...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 `;
             }
 
-            // 2. Coordinator Management (College Lead or Super Admin)
-            if (['super_admin', 'college_lead'].includes(user.role)) {
+            // 2. Coordinator Management (College Lead, Co-Lead, or Super Admin)
+            if (['super_admin', 'co_lead', 'college_lead'].includes(user.role)) {
                 html += `
                     <div class="data-section">
                         <h2 style="color: var(--accent-color);">Manage Coordinators</h2>
@@ -1250,7 +1267,48 @@
             container.innerHTML = html;
 
             loadTasks();
-            if (['super_admin', 'college_lead'].includes(user.role)) loadCoordinators();
+            if (['super_admin', 'co_lead', 'college_lead'].includes(user.role)) loadCoordinators();
+            if (['super_admin', 'co_lead', 'executive_lead'].includes(user.role)) loadDirectory();
+        }
+
+        async function loadDirectory() {
+            try {
+                const res = await fetchWithAuth('/api/community/directory');
+                const data = await res.json();
+                const tbody = document.getElementById('directoryTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No members found.</td></tr>';
+                    return;
+                }
+
+                // Helper to format roles
+                const formatRole = (role) => role.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+                data.forEach(u => {
+                    const org = u.collegeId ? u.collegeId.name : u.organization;
+                    let roleBadgeStr = formatRole(u.role);
+
+                    if (u.role === 'super_admin' || u.role === 'co_lead' || u.role === 'executive_lead') {
+                        roleBadgeStr = `<span style="color: #ff3333; font-weight: bold;">${roleBadgeStr}</span>`;
+                    } else if (u.role === 'core_team' || u.role === 'college_lead') {
+                        roleBadgeStr = `<span style="color: #FFA500;">${roleBadgeStr}</span>`;
+                    } else if (u.role === 'coordinator') {
+                        roleBadgeStr = `<span style="color: #4CAF50;">${roleBadgeStr}</span>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${u.name}</strong></td>
+                            <td>${roleBadgeStr}</td>
+                            <td style="font-family: monospace; color: var(--text-secondary);">${u.teamId}</td>
+                            <td>${org || '-'}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { console.error(err); }
         }
 
         async function handleCollegeSubmit(e) {

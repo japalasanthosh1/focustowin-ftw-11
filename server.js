@@ -437,7 +437,7 @@ app.get('/api/colleges', authMiddleware, async (req, res) => {
         } else if (role === 'coordinator' || role === 'member') {
             return res.status(403).json({ error: 'Access denied' });
         }
-        // SuperAdmin & ExecLead see all
+        // SuperAdmin, CoLead & ExecLead see all
         const colleges = await College.find(query).populate('collegeLeadId', 'name email teamId');
         res.json(colleges);
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -475,9 +475,17 @@ app.post('/api/community/users', authMiddleware, roleMiddleware(['super_admin'])
     } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
-app.get('/api/community/users', authMiddleware, roleMiddleware(['super_admin', 'executive_lead']), async (req, res) => {
+app.get('/api/community/users', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead']), async (req, res) => {
     try {
         const users = await User.find({ role: { $ne: 'member' } }).populate('collegeId', 'name').select('-passkey');
+        res.json(users);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Directory of All Managed Staff (for Hierarchy Table)
+app.get('/api/community/directory', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead']), async (req, res) => {
+    try {
+        const users = await User.find().populate('collegeId', 'name').select('-passkey').sort({ role: 1 });
         res.json(users);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -544,7 +552,7 @@ app.get('/api/tasks', authMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/tasks', authMiddleware, roleMiddleware(['super_admin', 'executive_lead', 'core_team', 'college_lead', 'coordinator']), async (req, res) => {
+app.post('/api/tasks', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead', 'core_team', 'college_lead', 'coordinator']), async (req, res) => {
     try {
         const { title, description, status, priority, dueDate, assignedTo, collegeIdInput } = req.body;
         const user = await User.findById(req.user.id);
@@ -601,7 +609,7 @@ app.post('/api/reports', authMiddleware, roleMiddleware(['college_lead', 'coordi
     } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
-app.put('/api/reports/:id/status', authMiddleware, roleMiddleware(['super_admin', 'executive_lead', 'core_team']), async (req, res) => {
+app.put('/api/reports/:id/status', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead', 'core_team']), async (req, res) => {
     try {
         const { status } = req.body;
         const updated = await Report.findByIdAndUpdate(req.params.id, { status, reviewedBy: req.user.id }, { new: true });
