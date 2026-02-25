@@ -866,6 +866,83 @@
                         </ul>
                     </div>
                 </div>
+
+                <!-- Manage Member Modal -->
+                <div id="manageMemberModal" class="modal"
+                    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
+                    <div class="data-section" style="width: 500px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">Manage Member</h2>
+                            <button onclick="closeManageMemberModal()"
+                                style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <p id="manageMemberHeader"
+                            style="color: var(--accent-color); font-weight: bold; margin-bottom: 5px; font-size: 1.1rem;">
+                        </p>
+                        <p id="manageMemberIdDisplay"
+                            style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;"></p>
+
+                        <input type="hidden" id="manageMemberId">
+
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="color: var(--text-secondary); font-size: 0.85rem;">Role</label>
+                                <select id="manageMemberRole"
+                                    style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
+                                    <option value="coordinator">Coordinator</option>
+                                    <option value="co_lead">Co-Lead</option>
+                                    <option value="lead">Lead</option>
+                                    <option value="core_team">Core Team</option>
+                                    <option value="super_admin">Super Admin</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="color: var(--text-secondary); font-size: 0.85rem;">Permissions</label>
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap:10px; padding: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+                                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;"><input
+                                            type="checkbox" id="managePermVideos" style="width: 16px; height: 16px;">
+                                        Videos</label>
+                                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;"><input
+                                            type="checkbox" id="managePermEvents" style="width: 16px; height: 16px;">
+                                        Events</label>
+                                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;"><input
+                                            type="checkbox" id="managePermTrending" style="width: 16px; height: 16px;">
+                                        Trending</label>
+                                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;"><input
+                                            type="checkbox" id="managePermApps" style="width: 16px; height: 16px;">
+                                        Apps</label>
+                                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;"><input
+                                            type="checkbox" id="managePermTeam" style="width: 16px; height: 16px;"> Team
+                                        Workspace</label>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="color: var(--text-secondary); font-size: 0.85rem;">Account Status</label>
+                                <label
+                                    style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 12px 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+                                    <span style="color: #fff;">Active Account</span>
+                                    <input type="checkbox" id="manageMemberActive" style="width: 18px; height: 18px;">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
+                            <button onclick="saveMemberChanges()" class="cta-button"
+                                style="width: 100%; padding: 12px; font-size: 1rem;">Save Changes</button>
+                            <button onclick="deleteMemberFromModal()"
+                                style="background: rgba(255,26,26,0.1); border: 1px solid rgba(255,26,26,0.3); color: #FF1A1A; padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
+                                onmouseover="this.style.background='rgba(255,26,26,0.2)'"
+                                onmouseout="this.style.background='rgba(255,26,26,0.1)'">Remove Member from
+                                Organization</button>
+                        </div>
+                        <div id="manageMemberMsg"
+                            style="text-align: center; min-height: 20px; font-weight: bold; margin-top: 15px;"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- TAB: MY PROFILE -->
@@ -1643,39 +1720,34 @@
 
                             tr.innerHTML = `
                                 <td>
-                                    <strong onclick="openMemberProfile('${m._id}')" style="cursor: pointer; color: var(--accent-color); text-decoration: underline;">${m.name}</strong><br>
+                                    <strong style="color: var(--accent-color);">${m.name}</strong><br>
                                     <div style="display: flex; align-items: center; gap: 5px; margin-top: 3px;">
                                         <span style="font-size: 0.8rem; color: var(--text-secondary);">ID: ${m.teamId}</span>
-                                        ${!isSuperIdx ? `<button onclick="editTeamId('${m._id}', '${m.teamId}')" style="background: transparent; color: var(--accent-color); border: none; font-size: 0.7rem; cursor: pointer; text-decoration: underline;">Edit</button>` : ''}
                                     </div>
                                     ${m.role === 'coordinator' && !m.isFirstLogin ? `<div style="margin-top: 5px;"><span class="status-badge" style="background: rgba(76, 175, 80, 0.1); color: #4CAF50; font-size: 0.65rem; padding: 2px 6px;"><i class="fas fa-lock" style="font-size: 0.6rem;"></i> Profile Locked</span></div>` : ''}
                                 </td>
                                 <td>
-                                    <select onchange="updateTeamRole('${m._id}', this.value)" ${disabledAttr} style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 5px; border-radius: 4px;">
-                                        <option value="coordinator" ${m.role === 'coordinator' ? 'selected' : ''}>Coordinator</option>
-                                        <option value="co_lead" ${m.role === 'co_lead' ? 'selected' : ''}>Co-Lead</option>
-                                        <option value="lead" ${m.role === 'lead' ? 'selected' : ''}>Lead</option>
-                                        <option value="core_team" ${m.role === 'core_team' ? 'selected' : ''}>Core Team</option>
-                                        <option value="super_admin" ${m.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
-                                    </select>
+                                    <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+                                        ${roleTitleMap[m.role] || m.role.replace('_', ' ')}
+                                    </span>
                                 </td>
                                 <td>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap:5px; font-size: 0.75rem;">
-                                        <label><input type="checkbox" ${m.permissions.canManageVideos ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canManageVideos', this.checked)" ${disabledAttr}> Videos</label>
-                                        <label><input type="checkbox" ${m.permissions.canManageEvents ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canManageEvents', this.checked)" ${disabledAttr}> Events</label>
-                                        <label><input type="checkbox" ${m.permissions.canManageTopRated ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canManageTopRated', this.checked)" ${disabledAttr}> Trending</label>
-                                        <label><input type="checkbox" ${m.permissions.canApproveApps ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canApproveApps', this.checked)" ${disabledAttr}> Apps</label>
-                                        <label><input type="checkbox" ${m.permissions.canManageTeam ? 'checked' : ''} onchange="togglePerm('${m._id}', 'canManageTeam', this.checked)" ${disabledAttr}> Team</label>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 5px; font-size: 0.7rem;">
+                                        ${m.permissions.canManageVideos ? '<span style="background: rgba(33, 150, 243, 0.2); color: #2196F3; padding: 2px 6px; border-radius: 4px;">Videos</span>' : ''}
+                                        ${m.permissions.canManageEvents ? '<span style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; padding: 2px 6px; border-radius: 4px;">Events</span>' : ''}
+                                        ${m.permissions.canManageTopRated ? '<span style="background: rgba(255, 152, 0, 0.2); color: #FF9800; padding: 2px 6px; border-radius: 4px;">Trending</span>' : ''}
+                                        ${m.permissions.canApproveApps ? '<span style="background: rgba(156, 39, 176, 0.2); color: #9C27B0; padding: 2px 6px; border-radius: 4px;">Apps</span>' : ''}
+                                        ${m.permissions.canManageTeam ? '<span style="background: rgba(244, 67, 54, 0.2); color: #F44336; padding: 2px 6px; border-radius: 4px;">Team</span>' : ''}
+                                        ${!m.permissions.canManageVideos && !m.permissions.canManageEvents && !m.permissions.canManageTopRated && !m.permissions.canApproveApps && !m.permissions.canManageTeam ? '<span style="color: var(--text-secondary);">None</span>' : ''}
                                     </div>
                                 </td>
                                 <td>
-                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                                        <input type="checkbox" ${m.isActive ? 'checked' : ''} onchange="toggleActive('${m._id}', this.checked)" ${disabledAttr}>
-                                        <span class="status-badge ${m.isActive ? 'status-approved' : 'status-pending'}" style="padding: 2px 8px; font-size: 0.7rem;">${m.isActive ? 'Active' : 'Locked'}</span>
-                                    </label>
+                                    <span class="status-badge ${m.isActive ? 'status-approved' : 'status-pending'}" style="padding: 4px 8px; font-size: 0.75rem;">${m.isActive ? 'Active' : 'Locked'}</span>
                                 </td>
                                 <td>
-                                    <button onclick="deleteTeamMember('${m._id}')" ${disabledAttr} style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Remove</button>
+                                    <button onclick="openManageMemberModal('${m._id}')" ${disabledAttr} style="background: transparent; color: var(--accent-color); border: 1px solid var(--accent-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,255,204,0.1)'" onmouseout="this.style.background='transparent'">
+                                        Manage
+                                    </button>
                                 </td>
                             `;
                             tbody.appendChild(tr);
@@ -1699,10 +1771,148 @@
         function openCollegesModal() { document.getElementById('manageCollegesModal').style.display = 'flex'; }
         function closeCollegesModal() { document.getElementById('manageCollegesModal').style.display = 'none'; }
 
+        // Manage Member Logic
+        let currentManageMemberData = null;
+
+        async function openManageMemberModal(memberId) {
+            try {
+                // Fetch latest team to ensure data is accurate
+                const userSession = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+                const query = `?org=${encodeURIComponent(userSession.organization)}&role=${userSession.role}`;
+                const res = await fetchWithAuth(`/api/team${query}`);
+                const data = await res.json();
+
+                const member = data.find(m => m._id === memberId);
+                if (!member) return;
+
+                currentManageMemberData = member;
+
+                // Populate Static Info
+                document.getElementById('manageMemberId').value = member._id;
+                document.getElementById('manageMemberHeader').innerText = member.name;
+                document.getElementById('manageMemberIdDisplay').innerText = `ID: ${member.teamId}`;
+
+                // Populate Role
+                const roleSelect = document.getElementById('manageMemberRole');
+                roleSelect.value = member.role;
+                const isSuperIdx = member.role === 'super_admin';
+                roleSelect.disabled = isSuperIdx;
+
+                // Populate Permissions
+                document.getElementById('managePermVideos').checked = member.permissions.canManageVideos;
+                document.getElementById('managePermEvents').checked = member.permissions.canManageEvents;
+                document.getElementById('managePermTrending').checked = member.permissions.canManageTopRated;
+                document.getElementById('managePermApps').checked = member.permissions.canApproveApps;
+                document.getElementById('managePermTeam').checked = member.permissions.canManageTeam;
+
+                document.getElementById('managePermVideos').disabled = isSuperIdx;
+                document.getElementById('managePermEvents').disabled = isSuperIdx;
+                document.getElementById('managePermTrending').disabled = isSuperIdx;
+                document.getElementById('managePermApps').disabled = isSuperIdx;
+                document.getElementById('managePermTeam').disabled = isSuperIdx;
+
+                // Populate Status
+                const activeToggle = document.getElementById('manageMemberActive');
+                activeToggle.checked = member.isActive;
+                activeToggle.disabled = isSuperIdx;
+
+                // Display Modal
+                document.getElementById('manageMemberMsg').innerText = '';
+                document.getElementById('manageMemberModal').style.display = 'flex';
+            } catch (err) {
+                console.error("Failed to open manage member modal:", err);
+            }
+        }
+
+        function closeManageMemberModal() {
+            document.getElementById('manageMemberModal').style.display = 'none';
+            currentManageMemberData = null;
+        }
+
+        async function saveMemberChanges() {
+            if (!currentManageMemberData) return;
+            const msgEl = document.getElementById('manageMemberMsg');
+            const memberId = currentManageMemberData._id;
+
+            msgEl.style.color = 'var(--text-secondary)';
+            msgEl.innerText = 'Saving changes...';
+
+            try {
+                // 1. Role (if changed)
+                const newRole = document.getElementById('manageMemberRole').value;
+                if (newRole !== currentManageMemberData.role) {
+                    await fetchWithAuth(`/api/team/${memberId}/update-role`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: newRole })
+                    });
+                }
+
+                // 2. Permissions
+                const perms = {
+                    canManageVideos: document.getElementById('managePermVideos').checked,
+                    canManageEvents: document.getElementById('managePermEvents').checked,
+                    canManageTopRated: document.getElementById('managePermTrending').checked,
+                    canApproveApps: document.getElementById('managePermApps').checked,
+                    canManageTeam: document.getElementById('managePermTeam').checked
+                };
+
+                await fetchWithAuth(`/api/team/${memberId}/permissions`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ permissions: perms })
+                });
+
+                // 3. Status (if changed)
+                const newStatus = document.getElementById('manageMemberActive').checked;
+                if (newStatus !== currentManageMemberData.isActive) {
+                    await fetchWithAuth(`/api/team/${memberId}/toggle-active`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ isActive: newStatus })
+                    });
+                }
+
+                msgEl.style.color = '#4CAF50';
+                msgEl.innerText = 'Changes saved successfully!';
+
+                setTimeout(() => {
+                    closeManageMemberModal();
+                    loadTeamTab();
+                }, 1000);
+
+            } catch (err) {
+                console.error(err);
+                msgEl.style.color = '#FF1A1A';
+                msgEl.innerText = 'Failed to save changes.';
+            }
+        }
+
+        async function deleteMemberFromModal() {
+            if (!currentManageMemberData) return;
+            const memberId = currentManageMemberData._id;
+
+            if (confirm(`Are you sure you want to completely remove ${currentManageMemberData.name}? This action cannot be undone.`)) {
+                try {
+                    const res = await fetchWithAuth(`/api/team/${memberId}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        closeManageMemberModal();
+                        loadTeamTab();
+                    } else {
+                        const err = await res.json();
+                        alert('Error: ' + err.error);
+                    }
+                } catch (err) {
+                    alert('Failed to remove team member. View console for details.');
+                }
+            }
+        }
+
         // Close modals when clicking outside
         window.onclick = function (event) {
             if (event.target == document.getElementById('inviteMemberModal')) closeInviteModal();
             if (event.target == document.getElementById('manageCollegesModal')) closeCollegesModal();
+            if (event.target == document.getElementById('manageMemberModal')) closeManageMemberModal();
             if (event.target == document.getElementById('taskModal')) closeTaskModal();
             if (event.target == document.getElementById('memberProfileModal')) closeMemberProfileModal();
         };
@@ -1807,14 +2017,14 @@
         async function togglePerm(id, perm, val) {
             try {
                 const userSession = JSON.parse(sessionStorage.getItem('ftwAdmin'));
-                const query = `?org=${encodeURIComponent(userSession.organization)}&role=${userSession.role}`;
-                const res = await fetchWithAuth(`/api/team${query}`);
+                const query = `? org = ${encodeURIComponent(userSession.organization)}& role=${userSession.role} `;
+                const res = await fetchWithAuth(`/ api / team${query} `);
                 const team = await res.json();
                 const user = team.find(u => u._id === id);
                 if (!user) return;
 
                 const newPermissions = { ...user.permissions, [perm]: val };
-                await fetchWithAuth(`/api/team/${id}/permissions`, {
+                await fetchWithAuth(`/ api / team / ${id}/permissions`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ permissions: newPermissions })
