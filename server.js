@@ -443,7 +443,7 @@ app.get('/api/colleges', authMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/colleges', authMiddleware, roleMiddleware(['super_admin']), async (req, res) => {
+app.post('/api/colleges', authMiddleware, roleMiddleware(['super_admin', 'co_lead', 'executive_lead']), async (req, res) => {
     try {
         const { name, collegeLeadId } = req.body;
         const newCollege = new College({ name, collegeLeadId, createdBy: req.user.id });

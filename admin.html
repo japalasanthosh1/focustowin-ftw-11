@@ -1195,10 +1195,14 @@
                                         <input type="text" id="assignName" placeholder="Full Name" required style="padding: 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff;">
                                         <input type="text" id="assignId" placeholder="FTW ID (e.g. FTW001)" required style="padding: 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff;">
                                     </div>
-                                    <select id="assignRole" style="padding: 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: #111; color: #fff;">
+                                    <select id="assignRole" onchange="toggleCollegeSelect()" style="padding: 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: #111; color: #fff;">
                                         <option value="executive_lead">Executive Lead</option>
                                         <option value="core_team">Core Team</option>
                                         <option value="college_lead">College Lead</option>
+                                        <option value="coordinator">Coordinator</option>
+                                    </select>
+                                    <select id="assignCollege" style="display: none; padding: 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: #111; color: #fff;">
+                                        <option value="">Select College / Organization...</option>
                                     </select>
                                     <button class="cta-button" type="submit">Deploy Role</button>
                                 </form>
@@ -1268,7 +1272,38 @@
 
             loadTasks();
             if (['super_admin', 'co_lead', 'college_lead'].includes(user.role)) loadCoordinators();
-            if (['super_admin', 'co_lead', 'executive_lead'].includes(user.role)) loadDirectory();
+            loadTasks();
+            if (['super_admin', 'co_lead', 'college_lead'].includes(user.role)) loadCoordinators();
+            if (['super_admin', 'co_lead', 'executive_lead'].includes(user.role)) {
+                loadDirectory();
+                populateCollegeSelect();
+            }
+        }
+
+        async function populateCollegeSelect() {
+            const select = document.getElementById('assignCollege');
+            if (!select) return;
+            try {
+                const res = await fetchWithAuth('/api/colleges');
+                const colleges = await res.json();
+                select.innerHTML = '<option value="">Select College / Organization...</option>';
+                colleges.forEach(c => {
+                    select.innerHTML += `<option value="${c._id}">${c.name}</option>`;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        function toggleCollegeSelect() {
+            const role = document.getElementById('assignRole').value;
+            const select = document.getElementById('assignCollege');
+            if (role === 'college_lead' || role === 'coordinator') {
+                select.style.display = 'block';
+                select.required = true;
+            } else {
+                select.style.display = 'none';
+                select.required = false;
+                select.value = '';
+            }
         }
 
         async function loadDirectory() {
@@ -1323,6 +1358,7 @@
                 if (res.ok) {
                     alert('College created');
                     document.getElementById('newCollegeName').value = '';
+                    if (typeof populateCollegeSelect !== 'undefined') populateCollegeSelect();
                 } else alert((await res.json()).error);
             } catch (err) { console.error(err); }
         }
@@ -1333,8 +1369,9 @@
                 const payload = {
                     name: document.getElementById('assignName').value,
                     teamId: document.getElementById('assignId').value,
-                    passkey: '12345678', // Default passkey
+                    passkey: 'FTW@2026',
                     role: document.getElementById('assignRole').value,
+                    collegeId: document.getElementById('assignCollege').value || null
                 };
                 const res = await fetchWithAuth('/api/community/users', {
                     method: 'POST',
@@ -1344,6 +1381,8 @@
                 if (res.ok) {
                     alert('Role assigned successfully');
                     e.target.reset();
+                    toggleCollegeSelect();
+                    loadDirectory();
                 } else alert((await res.json()).error);
             } catch (err) { console.error(err); }
         }
