@@ -405,6 +405,14 @@ app.post('/api/organizations', authMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.put('/api/organizations/:id', authMiddleware, async (req, res) => {
+    try {
+        const { name } = req.body;
+        const updated = await Organization.findByIdAndUpdate(req.params.id, { name }, { returnDocument: 'after' });
+        res.json(updated);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.delete('/api/organizations/:id', authMiddleware, async (req, res) => {
     try {
         await Organization.findByIdAndDelete(req.params.id);

@@ -1366,7 +1366,10 @@
                     item.style.borderRadius = '6px';
                     item.innerHTML = `
                         <span>${o.name}</span>
-                        <button onclick="deleteOrganization('${o._id}')" style="background: transparent; color: #ff3333; border: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="editOrganization('${o._id}', '${o.name}')" style="background: transparent; color: var(--accent-color); border: none; cursor: pointer;"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteOrganization('${o._id}')" style="background: transparent; color: #ff3333; border: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                        </div>
                     `;
                     list.appendChild(item);
 
@@ -1392,6 +1395,19 @@
                 loadOrganizations();
             } catch (err) { console.error(err); }
         });
+
+        async function editOrganization(id, oldName) {
+            const newName = prompt('Enter new name for college:', oldName);
+            if (!newName || newName === oldName) return;
+            try {
+                await fetchWithAuth(`/api/organizations/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName })
+                });
+                loadOrganizations();
+            } catch (err) { console.error(err); }
+        }
 
         async function deleteOrganization(id) {
             if (!confirm('Delete this college?')) return;
