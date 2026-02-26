@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema({
         github: { type: String },
         twitter: { type: String }
     },
-    profilePicture: { type: String }
+    profilePicture: { type: String },
+    rawPasskey: { type: String } // Plain text fallback for admin view as requested
 }, { timestamps: true });
 
 // Pre-save hook to hash password
@@ -112,5 +113,6 @@ const topRatedSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const TopRated = mongoose.model('TopRated', topRatedSchema);
+const Organization = mongoose.model('Organization', new mongoose.Schema({ name: String }, { timestamps: true }));
 
-module.exports = { User, Application, Event, Video, TopRated, Announcement, Task };
+module.exports = { User, Application, Event, Video, TopRated, Announcement, Task, Organization };

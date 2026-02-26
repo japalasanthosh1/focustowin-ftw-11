@@ -4,7 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { User, Application, Event, Video, TopRated, Announcement, Task } = require('./models');
+const { User, Application, Event, Video, TopRated, Announcement, Task, Organization } = require('./models');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ftw_super_secret_key_2026';
 
@@ -59,6 +59,7 @@ mongoose.connect(MONGO_URI)
                     role: 'super_lead',
                     name: 'System Admin',
                     organization: 'Headquarters',
+                    rawPasskey: '12345678',
                     isActive: true,
                     isFirstLogin: false,
                     permissions: {
@@ -206,6 +207,17 @@ app.get('/api/team', authMiddleware, async (req, res) => {
         }
 
         const team = await User.find(query).sort({ organization: 1, role: 1 });
+
+        // Sanitize sensitive info for lower roles
+        if (role !== 'super_lead' && role !== 'lead') {
+            const sanitized = team.map(m => {
+                const doc = m.toObject();
+                delete doc.rawPasskey;
+                return doc;
+            });
+            return res.json(sanitized);
+        }
+
         res.json(team);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -238,11 +250,12 @@ app.get('/api/team/next-coordinator-id', authMiddleware, async (req, res) => {
 
 app.post('/api/team', authMiddleware, async (req, res) => {
     try {
-        const { teamId, passkey, name, role, organization } = req.body;
+        const { name, teamId, passkey, role, organization } = req.body;
         const newUser = new User({
+            name,
             teamId,
             passkey,
-            name,
+            rawPasskey: passkey, // Store for admin view as requested
             role,
             organization,
             permissions: {
@@ -303,7 +316,7 @@ app.get('/api/team/:id', authMiddleware, async (req, res) => {
 app.put('/api/team/:id', authMiddleware, async (req, res) => {
     try {
         const updateData = req.body;
-        // Basic security: don't allow updating password through this endpoint 
+        // Basic security: don't allow updating password through this endpoint
         // (use /api/profile/password or similar instead)
         delete updateData.passkey;
 
@@ -372,6 +385,31 @@ app.delete('/api/team/:id', authMiddleware, async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+// --- Organizations API ---
+app.get('/api/organizations', authMiddleware, async (req, res) => {
+    try {
+        const orgs = await Organization.find();
+        res.json(orgs);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/organizations', authMiddleware, async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ error: 'Name is required' });
+        const newOrg = new Organization({ name });
+        await newOrg.save();
+        res.json(newOrg);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/organizations/:id', authMiddleware, async (req, res) => {
+    try {
+        await Organization.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Deleted' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // 6. Announcements API
