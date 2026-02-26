@@ -714,9 +714,10 @@
                                     <select id="teamRole" required onchange="handleRoleChange()"
                                         style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
                                         <option value="coordinator">Coordinator</option>
-                                        <option value="lead">College Lead</option>
-                                        <option value="core_team">Core Team</option>
-                                        <option value="super_admin">Super Admin</option>
+                                        <option value="college_lead">College Level Lead</option>
+                                        <option value="core_lead">Core Lead</option>
+                                        <option value="lead">Lead</option>
+                                        <option value="super_lead">Super Lead</option>
                                     </select>
                                 </div>
 
@@ -1437,7 +1438,7 @@
 
                     orgs[org].forEach(m => {
                         const tr = document.createElement('tr');
-                        const isSuperIdx = m.role === 'super_admin';
+                        const isSuperIdx = m.role === 'super_lead';
                         const disabledAttr = isSuperIdx ? 'disabled' : ''; // Protect super admins from self-lockout or changes here
 
                         tr.innerHTML = `
@@ -1452,9 +1453,10 @@
                             <td>
                                 <select onchange="updateTeamRole('${m._id}', this.value)" ${disabledAttr} style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 5px; border-radius: 4px;">
                                     <option value="coordinator" ${m.role === 'coordinator' ? 'selected' : ''}>Coordinator</option>
+                                    <option value="college_lead" ${m.role === 'college_lead' ? 'selected' : ''}>College Level Lead</option>
+                                    <option value="core_lead" ${m.role === 'core_lead' ? 'selected' : ''}>Core Lead</option>
                                     <option value="lead" ${m.role === 'lead' ? 'selected' : ''}>Lead</option>
-                                    <option value="core_team" ${m.role === 'core_team' ? 'selected' : ''}>Core Team</option>
-                                    <option value="super_admin" ${m.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
+                                    <option value="super_lead" ${m.role === 'super_lead' ? 'selected' : ''}>Super Lead</option>
                                 </select>
                             </td>
                             <td>
@@ -1549,9 +1551,21 @@
             if (role === 'coordinator') {
                 autoBtn.style.display = 'block';
                 passkeyInput.value = 'FTW@2026';
+            } else if (role === 'college_lead') {
+                autoBtn.style.display = 'none';
+                passkeyInput.value = 'FTW@COLLEGE';
+                document.getElementById('teamUserId').value = '';
+            } else if (role === 'core_lead') {
+                autoBtn.style.display = 'none';
+                passkeyInput.value = 'FTW@CORE';
+                document.getElementById('teamUserId').value = '';
             } else if (role === 'lead') {
                 autoBtn.style.display = 'none';
                 passkeyInput.value = 'FTW@LEAD';
+                document.getElementById('teamUserId').value = '';
+            } else if (role === 'super_lead') {
+                autoBtn.style.display = 'none';
+                passkeyInput.value = 'FTW@SUPER';
                 document.getElementById('teamUserId').value = '';
             } else {
                 autoBtn.style.display = 'none';
@@ -1915,9 +1929,10 @@
                             <label>Role</label>
                             <select id="editRole">
                                 <option value="coordinator">Coordinator</option>
-                                <option value="lead">College Lead</option>
-                                <option value="core_team">Core Team</option>
-                                <option value="super_admin">Super Admin</option>
+                                <option value="college_lead">College Level Lead</option>
+                                <option value="core_lead">Core Lead</option>
+                                <option value="lead">Lead</option>
+                                <option value="super_lead">Super Lead</option>
                             </select>
                         </div>
                         <div class="profile-field-group">

@@ -56,7 +56,7 @@ mongoose.connect(MONGO_URI)
                 const admin = new User({
                     teamId: 'FTWSJ01',
                     passkey: '12345678',
-                    role: 'super_admin',
+                    role: 'super_lead',
                     name: 'System Admin',
                     organization: 'Headquarters',
                     isActive: true,
@@ -200,8 +200,8 @@ app.get('/api/team', authMiddleware, async (req, res) => {
         const { org, role } = req.query;
         let query = {};
 
-        // Scoped access: if not super_admin, only see members of the same organization
-        if (role === 'lead' && org && org !== 'Headquarters') {
+        // Scoped access: super_lead and lead see all. Others only see their organization.
+        if (role !== 'super_lead' && role !== 'lead' && org && org !== 'Headquarters') {
             query.organization = org;
         }
 
@@ -246,11 +246,11 @@ app.post('/api/team', authMiddleware, async (req, res) => {
             role,
             organization,
             permissions: {
-                canManageVideos: role === 'super_admin',
-                canManageEvents: role === 'super_admin',
-                canManageTopRated: role === 'super_admin',
-                canApproveApps: role === 'super_admin',
-                canManageTeam: role === 'super_admin'
+                canManageVideos: role === 'super_lead',
+                canManageEvents: role === 'super_lead',
+                canManageTopRated: role === 'super_lead',
+                canApproveApps: role === 'super_lead',
+                canManageTeam: role === 'super_lead'
             }
         });
         await newUser.save();

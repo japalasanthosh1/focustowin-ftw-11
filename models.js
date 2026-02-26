@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     teamId: { type: String, required: true, unique: true },
     passkey: { type: String, required: true },
     name: { type: String, required: true },
-    role: { type: String, enum: ['super_admin', 'lead', 'coordinator', 'core_team'], default: 'coordinator' },
+    role: { type: String, enum: ['super_lead', 'lead', 'core_lead', 'college_lead', 'coordinator'], default: 'coordinator' },
     organization: { type: String, default: 'Headquarters' }, // e.g. "Stanford", "MIT"
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
