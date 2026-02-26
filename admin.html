@@ -409,6 +409,119 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Custom Dialog System */
+        #customDialogOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .custom-dialog {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .custom-dialog h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
+        .custom-dialog p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .custom-dialog input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .custom-dialog input:focus {
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .dialog-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dialog-btn-cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .dialog-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .dialog-btn-ok {
+            background: var(--accent-color);
+            border: none;
+            color: #000;
+        }
+
+        .dialog-btn-ok:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
     </style>
 </head>
 
@@ -987,6 +1100,74 @@
             window.location.href = 'login.html';
         }
 
+        // --- CUSTOM DIALOGS ---
+        function showCustomAlert(msg) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('customDialogOverlay');
+                const title = document.getElementById('dialogTitle');
+                const message = document.getElementById('dialogMessage');
+                const input = document.getElementById('dialogInput');
+                const okBtn = document.getElementById('dialogOk');
+                const cancelBtn = document.getElementById('dialogCancel');
+
+                title.innerText = "Notice";
+                message.innerText = msg;
+                input.style.display = 'none';
+                cancelBtn.style.display = 'none';
+                overlay.style.display = 'flex';
+
+                okBtn.onclick = () => {
+                    overlay.style.display = 'none';
+                    resolve();
+                };
+            });
+        }
+
+        function showCustomConfirm(msg) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('customDialogOverlay');
+                const title = document.getElementById('dialogTitle');
+                const message = document.getElementById('dialogMessage');
+                const input = document.getElementById('dialogInput');
+                const okBtn = document.getElementById('dialogOk');
+                const cancelBtn = document.getElementById('dialogCancel');
+
+                title.innerText = "Confirm Action";
+                message.innerText = msg;
+                input.style.display = 'none';
+                cancelBtn.style.display = 'block';
+                overlay.style.display = 'flex';
+
+                okBtn.onclick = () => { overlay.style.display = 'none'; resolve(true); };
+                cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(false); };
+            });
+        }
+
+        function showCustomPrompt(msg, defaultValue = '') {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('customDialogOverlay');
+                const title = document.getElementById('dialogTitle');
+                const message = document.getElementById('dialogMessage');
+                const input = document.getElementById('dialogInput');
+                const okBtn = document.getElementById('dialogOk');
+                const cancelBtn = document.getElementById('dialogCancel');
+
+                title.innerText = "Input Required";
+                message.innerText = msg;
+                input.value = defaultValue;
+                input.style.display = 'block';
+                cancelBtn.style.display = 'block';
+                overlay.style.display = 'flex';
+                input.focus();
+
+                okBtn.onclick = () => { overlay.style.display = 'none'; resolve(input.value); };
+                cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(null); };
+
+                // Allow "Enter" to submit
+                input.onkeydown = (e) => { if (e.key === 'Enter') okBtn.click(); };
+            });
+        }
+
         // Fetch real-time data from Express Server
         async function fetchDashboardData() {
             try {
@@ -1070,7 +1251,7 @@
         }
 
         async function deleteApp(id) {
-            if (!confirm('Are you sure you want to permanently delete this application?')) return;
+            if (!await showCustomConfirm('Are you sure you want to permanently delete this application?')) return;
             try {
                 const res = await fetchWithAuth(`/api/applications/${id}`, {
                     method: 'DELETE'
@@ -1169,7 +1350,7 @@
         });
 
         async function deleteVideo(id) {
-            if (confirm('Are you sure you want to delete this video?')) {
+            if (await showCustomConfirm('Are you sure you want to delete this video?')) {
                 await fetchWithAuth(`/api/videos/${id}`, { method: 'DELETE' });
                 loadVideosTab();
             }
@@ -1234,7 +1415,7 @@
         });
 
         async function deleteEvent(id) {
-            if (confirm('Are you sure you want to delete this event?')) {
+            if (await showCustomConfirm('Are you sure you want to delete this event?')) {
                 await fetch(`/api/events/${id}`, { method: 'DELETE' });
                 loadEventsTab();
             }
@@ -1312,7 +1493,7 @@
         });
 
         async function editTopRated(id, currentUrl, currentTag, currentHighlight) {
-            const newUrl = prompt(`Update the raw URL for ${currentTag}. The system will re-scrape the new link immediately:`, currentUrl);
+            const newUrl = await showCustomPrompt(`Update the raw URL for ${currentTag}. The system will re-scrape the new link immediately:`, currentUrl);
 
             if (newUrl) {
                 try {
@@ -1323,19 +1504,19 @@
                     });
 
                     if (res.ok) {
-                        alert("Link updated and re-scraped successfully!");
+                        await showCustomAlert("Link updated and re-scraped successfully!");
                         loadTopRatedTab();
                     } else {
-                        alert("Error saving the updated link.");
+                        await showCustomAlert("Error saving the updated link.");
                     }
                 } catch (err) {
-                    alert("Network error.");
+                    await showCustomAlert("Network error.");
                 }
             }
         }
 
         async function deleteTopRated(id) {
-            if (confirm('Are you sure you want to remove this trending item?')) {
+            if (await showCustomConfirm('Are you sure you want to remove this trending item?')) {
                 await fetchWithAuth(`/api/toprated/${id}`, { method: 'DELETE' });
                 loadTopRatedTab();
             }
@@ -1403,7 +1584,7 @@
         });
 
         async function editOrganization(id, oldName) {
-            const newName = prompt('Enter new name for college:', oldName);
+            const newName = await showCustomPrompt('Enter new name for college:', oldName);
             if (!newName || newName === oldName) return;
             try {
                 await fetchWithAuth(`/api/organizations/${id}`, {
@@ -1416,7 +1597,7 @@
         }
 
         async function deleteOrganization(id) {
-            if (!confirm('Delete this college?')) return;
+            if (!await showCustomConfirm('Delete this college?')) return;
             try {
                 await fetchWithAuth(`/api/organizations/${id}`, { method: 'DELETE' });
                 loadOrganizations();
@@ -1740,7 +1921,7 @@
 
         async function editTeamId(id, currentId) {
             console.log('editTeamId clicked:', id, currentId);
-            const newId = prompt('Enter new Team ID:', currentId);
+            const newId = await showCustomPrompt('Enter new Team ID:', currentId);
             if (newId && newId !== currentId) {
                 console.log('Updating Team ID to:', newId);
                 try {
@@ -1904,7 +2085,7 @@
                 });
                 if (res.ok) {
                     const updated = await res.json();
-                    alert('Profile setup complete! Welcome aboard.');
+                    await showCustomAlert('Profile setup complete! Welcome aboard.');
                     document.getElementById('onboardingModal').style.display = 'none';
                     // Update session with new org and firstLogin=false
                     user.isFirstLogin = false;
@@ -1923,7 +2104,7 @@
         }
 
         async function deleteTeamMember(id) {
-            if (!confirm('Are you sure you want to remove this team member?')) return;
+            if (!await showCustomConfirm('Are you sure you want to remove this team member?')) return;
             try {
                 await fetchWithAuth(`/api/team/${id}`, { method: 'DELETE' });
                 loadTeamTab();
@@ -2002,12 +2183,12 @@
                     body: JSON.stringify(payload)
                 });
                 if (res.ok) {
-                    alert('Member profile updated successfully!');
+                    await showCustomAlert('Member profile updated successfully!');
                     closeMemberProfileModal();
                     loadTeamTab();
                 } else {
                     const err = await res.json();
-                    alert(`Error: ${err.error}`);
+                    await showCustomAlert(`Error: ${err.error}`);
                 }
             } catch (err) { console.error('Error saving member profile:', err); }
         }
@@ -2016,7 +2197,7 @@
             const input = document.getElementById('editPasskeyView');
             input.select();
             document.execCommand('copy');
-            alert('Passkey copied to clipboard!');
+            showCustomAlert('Passkey copied to clipboard!');
         }
     </script>
     <!-- MEMBER PROFILE MODAL -->
@@ -2117,6 +2298,18 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+    <!-- CUSTOM DIALOG SYSTEM -->
+    <div id="customDialogOverlay">
+        <div class="custom-dialog" id="dialogBox">
+            <h3 id="dialogTitle">Dialog</h3>
+            <p id="dialogMessage">Message goes here.</p>
+            <input type="text" id="dialogInput" style="display: none;">
+            <div class="dialog-actions">
+                <button id="dialogCancel" class="dialog-btn dialog-btn-cancel">Cancel</button>
+                <button id="dialogOk" class="dialog-btn dialog-btn-ok">OK</button>
+            </div>
         </div>
     </div>
 </body>
