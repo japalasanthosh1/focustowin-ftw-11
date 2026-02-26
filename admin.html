@@ -1190,9 +1190,6 @@
                 overlay.style.display = 'flex';
                 input.focus();
 
-                okBtn.onclick = () => { overlay.style.display = 'none'; resolve(input.value); };
-                cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(null); };
-
                 // Allow "Enter" to submit
                 input.onkeydown = (e) => { if (e.key === 'Enter') okBtn.click(); };
             });
@@ -1639,6 +1636,7 @@
             // initMagneticButtons(); // Temporarily disabled or missing
             console.log('DOM Content Loaded - Initializing Dashboard');
             fetchDashboardData(); // Call immediately on load
+            loadOrganizations(); // Ensure dropdowns (including onboarding) are populated
             loadAnnouncements();
             checkOnboarding();
         });
