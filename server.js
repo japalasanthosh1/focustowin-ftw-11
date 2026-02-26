@@ -179,10 +179,35 @@ app.put('/api/profile/password', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-    const { teamId, passkey } = req.body;
+    let { teamId, passkey } = req.body;
+
+    // Normalize inputs
+    teamId = teamId ? teamId.trim().toUpperCase().replace(/-/g, '') : '';
+    passkey = passkey ? passkey.trim() : '';
+
     try {
         const user = await User.findOne({ teamId });
-        if (!user || !(await user.comparePasskey(passkey))) {
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Try bcrypt comparison first
+        let isMatch = await user.comparePasskey(passkey);
+
+        // Migration Fallback: If bcrypt fails, check if stored passkey is plain-text
+        if (!isMatch && !user.passkey.startsWith('$2b$')) {
+            if (user.passkey === passkey) {
+                // Manually hash since setting it to the same value won't trigger isModified
+                const salt = await bcrypt.genSalt(12);
+                user.passkey = await bcrypt.hash(passkey, salt);
+                user.rawPasskey = passkey;
+
+                await user.save();
+                isMatch = true;
+            }
+        }
+
+        if (!isMatch) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
