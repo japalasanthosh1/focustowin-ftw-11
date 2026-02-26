@@ -4,12 +4,9 @@ const bcrypt = require('bcryptjs');
 // --- User Model (Admins/Core) ---
 const userSchema = new mongoose.Schema({
     teamId: { type: String, required: true, unique: true },
-    email: { type: String, sparse: true, unique: true },
     passkey: { type: String, required: true },
     name: { type: String, required: true },
-    role: { type: String, enum: ['super_admin', 'co_lead', 'executive_lead', 'core_team', 'college_lead', 'coordinator', 'member'], default: 'member' },
-    collegeId: { type: mongoose.Schema.Types.ObjectId, ref: 'College', default: null },
-    assignedCoreId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    role: { type: String, enum: ['super_admin', 'lead', 'coordinator', 'core_team'], default: 'coordinator' },
     organization: { type: String, default: 'Headquarters' }, // e.g. "Stanford", "MIT"
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
@@ -17,7 +14,8 @@ const userSchema = new mongoose.Schema({
         canManageVideos: { type: Boolean, default: false },
         canManageEvents: { type: Boolean, default: false },
         canManageTopRated: { type: Boolean, default: false },
-        canApproveApps: { type: Boolean, default: false }
+        canApproveApps: { type: Boolean, default: false },
+        canManageTeam: { type: Boolean, default: false }
     },
     isFirstLogin: { type: Boolean, default: true },
     phone: { type: String },
@@ -49,6 +47,25 @@ userSchema.methods.comparePasskey = async function (candidatePasskey) {
 
 const User = mongoose.model('User', userSchema);
 
+// --- Announcement Model ---
+const announcementSchema = new mongoose.Schema({
+    content: { type: String, required: true },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'low' }
+}, { timestamps: true });
+
+const Announcement = mongoose.model('Announcement', announcementSchema);
+
+// --- Task Model ---
+const taskSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    description: { type: String },
+    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
+    dueDate: { type: Date }
+}, { timestamps: true });
+
+const Task = mongoose.model('Task', taskSchema);
 
 // --- Application Model (Join Form) ---
 const applicationSchema = new mongoose.Schema({
@@ -95,63 +112,4 @@ const topRatedSchema = new mongoose.Schema({
 
 const TopRated = mongoose.model('TopRated', topRatedSchema);
 
-// --- Community RBAC Models ---
-
-// College Table
-const collegeSchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true },
-    collegeLeadId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-}, { timestamps: true });
-
-const College = mongoose.model('College', collegeSchema);
-
-// Core Team Assignment Table
-const coreTeamAssignmentSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    executiveLeadId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    vertical: { type: String, required: true }, // Operations, Marketing, Tech, etc.
-    assignedColleges: [{ type: mongoose.Schema.Types.ObjectId, ref: 'College' }]
-}, { timestamps: true });
-
-const CoreTeamAssignment = mongoose.model('CoreTeamAssignment', coreTeamAssignmentSchema);
-
-// Coordinator Assignment Table
-const coordinatorAssignmentSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    collegeId: { type: mongoose.Schema.Types.ObjectId, ref: 'College', required: true },
-    assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-}, { timestamps: true });
-
-const CoordinatorAssignment = mongoose.model('CoordinatorAssignment', coordinatorAssignmentSchema);
-
-// Task Model (Kanban)
-const taskSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    description: { type: String },
-    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    collegeId: { type: mongoose.Schema.Types.ObjectId, ref: 'College', default: null },
-    status: { type: String, enum: ['todo', 'in-progress', 'done'], default: 'todo' },
-    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
-    dueDate: { type: Date }
-}, { timestamps: true });
-
-const Task = mongoose.model('Task', taskSchema);
-
-// Weekly Report Model
-const reportSchema = new mongoose.Schema({
-    authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    collegeId: { type: mongoose.Schema.Types.ObjectId, ref: 'College', required: true },
-    content: { type: String, required: true },
-    metrics: { type: Object, default: {} }, // e.g., { attendees: 50, events_held: 2 }
-    status: { type: String, enum: ['submitted', 'approved', 'rejected'], default: 'submitted' },
-    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
-}, { timestamps: true });
-
-const Report = mongoose.model('Report', reportSchema);
-
-module.exports = {
-    User, Application, Event, Video, TopRated,
-    College, CoreTeamAssignment, CoordinatorAssignment, Task, Report
-};
+module.exports = { User, Application, Event, Video, TopRated };
