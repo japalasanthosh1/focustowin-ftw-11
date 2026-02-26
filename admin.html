@@ -677,7 +677,17 @@
 
                 <!-- Video List -->
                 <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Featured Video Gallery</h2>
+                    <div class="section-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0;">Live Video Feed</h2>
+                        <div style="position: relative; max-width: 250px; flex: 1;">
+                            <input type="text" id="videoSearch" placeholder="Search videos..."
+                                oninput="filterTable('videosTableBody', 'videoSearch')"
+                                style="padding: 8px 15px 8px 35px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 100%; font-size: 0.8rem;">
+                            <span
+                                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.8rem;">🔍</span>
+                        </div>
+                    </div>
                     <table class="glass-table">
                         <thead>
                             <tr>
@@ -725,7 +735,17 @@
 
                 <!-- Event List -->
                 <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Live Events</h2>
+                    <div class="section-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0;">Live Events</h2>
+                        <div style="position: relative; max-width: 250px; flex: 1;">
+                            <input type="text" id="eventSearch" placeholder="Search events..."
+                                oninput="filterTable('eventsTableBody', 'eventSearch')"
+                                style="padding: 8px 15px 8px 35px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 100%; font-size: 0.8rem;">
+                            <span
+                                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.8rem;">🔍</span>
+                        </div>
+                    </div>
                     <table class="glass-table">
                         <thead>
                             <tr>
@@ -776,9 +796,19 @@
                     </form>
                 </div>
 
-                <!-- Top Rated List -->
+                <!-- Current Links -->
                 <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Current Trending Cards</h2>
+                    <div class="section-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0;">Active Trending Content</h2>
+                        <div style="position: relative; max-width: 250px; flex: 1;">
+                            <input type="text" id="topRatedSearch" placeholder="Search content..."
+                                oninput="filterTable('topRatedTableBody', 'topRatedSearch')"
+                                style="padding: 8px 15px 8px 35px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 100%; font-size: 0.8rem;">
+                            <span
+                                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.8rem;">🔍</span>
+                        </div>
+                    </div>
                     <table class="glass-table">
                         <thead>
                             <tr>
@@ -877,7 +907,7 @@
                         <h2 style="margin: 0; white-space: nowrap;">Team Directory</h2>
                         <div style="position: relative; flex: 1; max-width: 400px;">
                             <input type="text" id="memberSearch" placeholder="Search by name or ID..."
-                                onkeyup="filterTeam()"
+                                oninput="filterTeam()"
                                 style="padding: 10px 20px 10px 40px; border-radius: 30px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 100%;">
                             <span
                                 style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); opacity: 0.5;">🔍</span>
@@ -1782,15 +1812,27 @@
             container.appendChild(section);
         }
 
+        function filterTable(tableBodyId, queryId) {
+            const query = document.getElementById(queryId).value.toLowerCase();
+            const rows = document.querySelectorAll(`#${tableBodyId} tr`);
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
         function filterTeam() {
             const query = document.getElementById('memberSearch').value.toLowerCase();
             const rows = document.querySelectorAll('#teamHierarchyContainer table.glass-table tbody tr');
 
             rows.forEach(row => {
                 const name = row.querySelector('td:first-child strong').innerText.toLowerCase();
-                const id = row.querySelector('td:first-child div span').innerText.toLowerCase();
+                // Select only elements containing the ID text, avoiding potential icon labels or other metadata
+                const idDiv = row.querySelector('td:first-child div');
+                const idText = idDiv ? idDiv.innerText.toLowerCase() : '';
 
-                if (name.includes(query) || id.includes(query)) {
+                if (name.includes(query) || idText.includes(query)) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
