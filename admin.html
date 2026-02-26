@@ -2242,6 +2242,12 @@
 
         document.getElementById('onboardingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+
+            btn.disabled = true;
+            btn.innerText = 'Processing Setup...';
+
             const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
             const payload = {
                 userId: user.id,
@@ -2258,17 +2264,30 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 if (res.ok) {
-                    const updated = await res.json();
+                    const data = await res.json();
                     await showCustomAlert('Profile setup complete! Welcome aboard.');
                     document.getElementById('onboardingModal').style.display = 'none';
-                    // Update session with new org and firstLogin=false
+
+                    // Update session with new data
                     user.isFirstLogin = false;
-                    user.organization = updated.user.organization;
+                    user.organization = data.user.organization;
                     sessionStorage.setItem('ftwAdmin', JSON.stringify(user));
-                    location.reload(); // Reload to apply locks
+
+                    location.reload(); // Reload to apply locks and refresh data
+                } else {
+                    const errData = await res.json();
+                    await showCustomAlert(`Setup Failed: ${errData.error || 'Server error'}`);
+                    btn.disabled = false;
+                    btn.innerText = originalText;
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                console.error(err);
+                await showCustomAlert('Connection error. Please try again.');
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
         });
 
         function checkOnboarding() {

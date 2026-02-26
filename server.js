@@ -178,6 +178,50 @@ app.put('/api/profile/password', authMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// 3b. Complete Onboarding (First Login)
+app.post('/api/profile/complete', authMiddleware, async (req, res) => {
+    try {
+        const { newPasskey, phone, skills, bio, organization } = req.body;
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Update security
+        if (newPasskey) {
+            user.passkey = newPasskey;
+            user.rawPasskey = newPasskey;
+        }
+
+        // Update Profile
+        user.phone = phone;
+        user.bio = bio;
+        user.organization = organization;
+        user.isFirstLogin = false;
+
+        // Convert skills string to array if it's not already
+        if (typeof skills === 'string') {
+            user.skills = skills.split(',').map(s => s.trim()).filter(s => s !== '');
+        } else if (Array.isArray(skills)) {
+            user.skills = skills;
+        }
+
+        await user.save();
+
+        res.json({
+            message: 'Onboarding complete',
+            user: {
+                id: user._id,
+                teamId: user.teamId,
+                name: user.name,
+                role: user.role,
+                organization: user.organization,
+                isFirstLogin: user.isFirstLogin
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/login', async (req, res) => {
     let { teamId, passkey } = req.body;
 
