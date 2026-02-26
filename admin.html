@@ -7,6 +7,7 @@
     <title>FTW | Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Dashboard Specific Overrides */
         body {
@@ -423,13 +424,18 @@
         <a href="index.html" class="sidebar-logo">FTW<span>.</span></a>
 
         <ul class="nav-menu">
-            <li><a href="#" class="nav-item active" onclick="switchTab('overview')">Overview</a></li>
-            <li><a href="#" class="nav-item" onclick="switchTab('events')">Events Manager</a></li>
-            <li><a href="#" class="nav-item" onclick="switchTab('toprated')">Top Rated Manager</a></li>
-            <li><a href="#" class="nav-item" onclick="switchTab('videos')">Video Manager</a></li>
-            <div class="nav-item" onclick="switchTab('team')">Team Workspace</div>
-            <div class="nav-item" onclick="switchTab('setup')">Team Setup</div>
-            <div class="nav-item" onclick="switchTab('overview')">Lead Dashboard</div>
+            <li><a href="#" class="nav-item active" onclick="switchTab('overview')"><i class="fas fa-chart-line"></i>
+                    Overview</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('events')"><i class="fas fa-calendar-alt"></i> Events
+                    Manager</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('toprated')"><i class="fas fa-star"></i> Top Rated
+                    Manager</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('videos')"><i class="fas fa-video"></i> Video
+                    Manager</a></li>
+            <li><a href="#" class="nav-item" onclick="switchTab('team')"><i class="fas fa-users"></i> Team Workspace</a>
+            </li>
+            <li><a href="#" class="nav-item" onclick="switchTab('setup')"><i class="fas fa-cogs"></i> Team Setup</a>
+            </li>
         </ul>
 
         <div class="sidebar-footer">
