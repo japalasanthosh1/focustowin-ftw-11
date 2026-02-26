@@ -537,17 +537,26 @@
         <a href="index.html" class="sidebar-logo">FTW<span>.</span></a>
 
         <ul class="nav-menu">
-            <li><a href="#" class="nav-item active" onclick="switchTab('overview')"><i class="fas fa-chart-line"></i>
+            <li id="nav-overview"><a href="#" class="nav-item active" onclick="switchTab('overview')"><i
+                        class="fas fa-chart-line"></i>
                     Overview</a></li>
-            <li><a href="#" class="nav-item" onclick="switchTab('events')"><i class="fas fa-calendar-alt"></i> Events
+            <li id="nav-events"><a href="#" class="nav-item" onclick="switchTab('events')"><i
+                        class="fas fa-calendar-alt"></i> Events
                     Manager</a></li>
-            <li><a href="#" class="nav-item" onclick="switchTab('toprated')"><i class="fas fa-star"></i> Top Rated
+            <li id="nav-toprated"><a href="#" class="nav-item" onclick="switchTab('toprated')"><i
+                        class="fas fa-star"></i> Top Rated
                     Manager</a></li>
-            <li><a href="#" class="nav-item" onclick="switchTab('videos')"><i class="fas fa-video"></i> Video
+            <li id="nav-videos"><a href="#" class="nav-item" onclick="switchTab('videos')"><i class="fas fa-video"></i>
+                    Video
                     Manager</a></li>
-            <li><a href="#" class="nav-item" onclick="switchTab('team')"><i class="fas fa-users"></i> Team Workspace</a>
+            <li id="nav-team"><a href="#" class="nav-item" onclick="switchTab('team')"><i class="fas fa-users"></i> Team
+                    Workspace</a>
             </li>
-            <li><a href="#" class="nav-item" onclick="switchTab('setup')"><i class="fas fa-cogs"></i> Team Setup</a>
+            <li id="nav-setup"><a href="#" class="nav-item" onclick="switchTab('setup')"><i class="fas fa-cogs"></i>
+                    Team Setup</a>
+            </li>
+            <li id="nav-profile"><a href="#" class="nav-item" onclick="switchTab('profile')"><i
+                        class="fas fa-user-circle"></i> My Profile</a>
             </li>
         </ul>
 
@@ -1277,6 +1286,43 @@
             } catch (error) { console.error('Error updating application:', error); }
         }
 
+        // --- RBAC: Curated Access Control ---
+        function applyRBAC() {
+            const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+            if (!user) return;
+
+            const p = user.permissions || {};
+            const role = user.role;
+
+            // Sidebar Visibility
+            if (!p.canManageEvents) document.getElementById('nav-events').style.display = 'none';
+            if (!p.canManageTopRated) document.getElementById('nav-toprated').style.display = 'none';
+            if (!p.canManageVideos) document.getElementById('nav-videos').style.display = 'none';
+            if (!p.canManageTeam) document.getElementById('nav-team').style.display = 'none';
+
+            // Setup Tab - Restricted to Super Lead and Lead
+            if (role !== 'super_lead' && role !== 'lead') {
+                document.getElementById('nav-setup').style.display = 'none';
+            }
+
+            // Content Visibility (Actions)
+            // Note: Since some content is loaded dynamically, we call this after data fetches too.
+            if (!p.canManageTeam) {
+                // Hide "Invite Member" group in any tab
+                const inviteSections = document.querySelectorAll('.data-section h2');
+                inviteSections.forEach(h2 => {
+                    if (h2.innerText.includes('Invite New Member')) {
+                        h2.closest('.data-section').style.display = 'none';
+                    }
+                });
+            }
+
+            if (!p.canApproveApps) {
+                // If they can't approve, we hide the action column or buttons in Overview
+                // This will be handled more precisely in the render functions.
+            }
+        }
+
         async function deleteApp(id) {
             if (!await showCustomConfirm('Are you sure you want to permanently delete this application?')) return;
             try {
@@ -1295,9 +1341,19 @@
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
 
             // Show target tab
-            document.getElementById(`tab-${tabId}`).classList.add('active-tab');
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) {
+                targetTab.classList.add('active-tab');
+            }
+
             // Add active class to clicked nav item
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // If called programmatically, find the nav item
+                const navItem = document.querySelector(`#nav-${tabId} a`);
+                if (navItem) navItem.classList.add('active');
+            }
 
             if (tabId === 'videos') loadVideosTab();
             if (tabId === 'events') loadEventsTab();
@@ -1310,6 +1366,78 @@
                 loadAnnouncements();
             }
         }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // --- Profile Tab Logic ---
+        async function loadProfileTab() {
+            const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+            if (!user) return;
+
+            document.getElementById('profileOrgDisplay').innerText = user.organization || 'Not Assigned';
+
+            // Populate professional details
+            document.getElementById('profPhone').value = user.phone || '';
+            document.getElementById('profSkills').value = user.skills ? user.skills.join(', ') : '';
+            document.getElementById('profBio').value = user.bio || '';
+            document.getElementById('linkGithub').value = (user.socialLinks && user.socialLinks.github) || '';
+            document.getElementById('linkLinkedin').value = (user.socialLinks && user.socialLinks.linkedin) || '';
+            document.getElementById('linkTwitter').value = (user.socialLinks && user.socialLinks.twitter) || '';
+        }
+
+        document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentPass = document.getElementById('currentPass').value;
+            const newPass = document.getElementById('newPass').value;
+            const msg = document.getElementById('passMsg');
+
+            try {
+                const res = await fetchWithAuth('/api/profile/password', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPass, newPass })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.style.color = '#4CAF50';
+                    msg.innerText = 'Password updated successfully!';
+                    e.target.reset();
+                } else {
+                    msg.style.color = '#ff3333';
+                    msg.innerText = data.error || 'Failed to update password.';
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                phone: document.getElementById('profPhone').value,
+                skills: document.getElementById('profSkills').value.split(',').map(s => s.trim()).filter(s => s !== ''),
+                bio: document.getElementById('profBio').value,
+                socialLinks: {
+                    github: document.getElementById('linkGithub').value,
+                    linkedin: document.getElementById('linkLinkedin').value,
+                    twitter: document.getElementById('linkTwitter').value
+                }
+            };
+
+            try {
+                const res = await fetchWithAuth('/api/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    const updated = await res.json();
+                    sessionStorage.setItem('ftwAdmin', JSON.stringify(updated)); // Update local session
+                    await showCustomAlert('Profile updated successfully!');
+                }
+            } catch (err) { console.error(err); }
+        });
 
         // --- Video Manager Logic ---
         async function loadVideosTab() {
@@ -1639,6 +1767,7 @@
             loadOrganizations(); // Ensure dropdowns (including onboarding) are populated
             loadAnnouncements();
             checkOnboarding();
+            applyRBAC(); // Curate UI based on role/permissions
         });
 
         // --- Announcements Logic ---
@@ -1758,6 +1887,9 @@
         function renderTeamSection(container, title, members, isNested = false) {
             if (members.length === 0) return;
 
+            const user = JSON.parse(sessionStorage.getItem('ftwAdmin'));
+            const canManage = user && (user.role === 'super_lead' || user.role === 'lead' || (user.permissions && user.permissions.canManageTeam));
+
             const section = document.createElement('div');
             section.style.marginBottom = isNested ? '20px' : '40px';
             section.innerHTML = `<h4 style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px;">${title}</h4>`;
@@ -1771,7 +1903,7 @@
                         <th>Role</th>
                         <th>Status</th>
                         <th>Permissions</th>
-                        <th>Actions</th>
+                        ${canManage ? '<th>Actions</th>' : ''}
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -1780,8 +1912,9 @@
 
             members.forEach(m => {
                 const tr = document.createElement('tr');
-                const isSuperIdx = m.role === 'super_lead';
-                const disabledAttr = isSuperIdx ? 'disabled' : '';
+                const isSuperIdx = m.role === 'super_lead' || m.teamId === 'FTWSJ01';
+                // Only supervisors can toggle active status or remove members
+                const canEditThisMember = canManage && !isSuperIdx;
 
                 tr.innerHTML = `
                     <td>
@@ -1790,19 +1923,21 @@
                     </td>
                     <td><span class="status-badge" style="background: rgba(255,255,255,0.05); color: #fff;">${m.role.replace('_', ' ').toUpperCase()}</span></td>
                     <td>
-                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                            <input type="checkbox" ${m.isActive ? 'checked' : ''} onchange="toggleActive('${m._id}', this.checked)" ${disabledAttr}>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: ${canEditThisMember ? 'pointer' : 'default'};">
+                            <input type="checkbox" ${m.isActive ? 'checked' : ''} onchange="toggleActive('${m._id}', this.checked)" ${canEditThisMember ? '' : 'disabled'}>
                             <span class="status-badge ${m.isActive ? 'status-approved' : 'status-pending'}" style="padding: 2px 8px; font-size: 0.7rem;">${m.isActive ? 'Active' : 'Locked'}</span>
                         </label>
                     </td>
                     <td>
                          <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                            ${Object.entries(m.permissions).filter(([k, v]) => v).map(([k, v]) => `<span style="font-size: 0.6rem; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">${k.replace('canManage', '')}</span>`).join('')}
+                            ${Object.entries(m.permissions || {}).filter(([k, v]) => v).map(([k, v]) => `<span style="font-size: 0.6rem; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">${k.replace('canManage', '')}</span>`).join('')}
                          </div>
                     </td>
+                    ${canManage ? `
                     <td>
-                        <button onclick="deleteTeamMember('${m._id}')" ${disabledAttr} style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">Remove</button>
+                        <button onclick="deleteTeamMember('${m._id}')" ${canEditThisMember ? '' : 'disabled'} style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 4px 8px; border-radius: 4px; cursor: ${canEditThisMember ? 'pointer' : 'not-allowed'}; font-size: 0.7rem;">Remove</button>
                     </td>
+                    ` : ''}
                 `;
                 tbody.appendChild(tr);
             });

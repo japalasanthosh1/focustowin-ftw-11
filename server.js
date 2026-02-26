@@ -101,7 +101,12 @@ app.post('/api/applications', async (req, res) => {
 // 2. Fetch Applications (Admin Dashboard)
 app.get('/api/applications', authMiddleware, async (req, res) => {
     try {
-        const apps = await Application.find().sort({ appliedAt: -1 }); // Newest first
+        if (!req.user.role.includes('lead') && req.user.role !== 'super_lead') {
+            // Secondary check if they have explicit permission
+            const user = await User.findById(req.user.id);
+            if (!user.permissions?.canApproveApps) return res.status(403).json({ error: 'Unauthorized' });
+        }
+        const apps = await Application.find().sort({ appliedAt: -1 });
         res.json(apps);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -138,7 +143,41 @@ app.delete('/api/applications/:id', authMiddleware, async (req, res) => {
     }
 });
 
-// 3. Admin Authentication
+// 3. Admin Authentication & Profile
+app.get('/api/profile', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/profile', authMiddleware, async (req, res) => {
+    try {
+        const { phone, socialLinks, bio, skills } = req.body;
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { phone, socialLinks, bio, skills },
+            { returnDocument: 'after' }
+        );
+        res.json(user);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/profile/password', authMiddleware, async (req, res) => {
+    try {
+        const { currentPass, newPass } = req.body;
+        const user = await User.findById(req.user.id);
+        if (!user || !(await user.comparePasskey(currentPass))) {
+            return res.status(401).json({ error: 'Current password incorrect' });
+        }
+        user.passkey = newPass;
+        user.rawPasskey = newPass; // Update viewable passkey
+        await user.save();
+        res.json({ message: 'Password updated successfully' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.post('/api/login', async (req, res) => {
     const { teamId, passkey } = req.body;
     try {
@@ -328,54 +367,7 @@ app.put('/api/team/:id', authMiddleware, async (req, res) => {
     }
 });
 
-// --- User Profile/Onboarding APIs ---
-app.post('/api/profile/complete', authMiddleware, async (req, res) => {
-    try {
-        const { userId, newPasskey, bio, skills, phone, socialLinks, organization } = req.body;
-
-        const userCheck = await User.findById(userId);
-        if (!userCheck) return res.status(404).json({ error: 'User not found' });
-
-        // Final "one-time" enforcement
-        if (userCheck.role === 'coordinator' && !userCheck.isFirstLogin) {
-            return res.status(403).json({ error: 'Profile is already locked. Contact your lead for changes.' });
-        }
-
-        const updateData = {
-            passkey: newPasskey,
-            bio,
-            skills: Array.isArray(skills) ? skills : (skills ? skills.split(',').map(s => s.trim()) : []),
-            phone,
-            socialLinks,
-            isFirstLogin: false // Mark onboarding as complete
-        };
-
-        if (organization) updateData.organization = organization;
-
-        const user = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after' });
-        res.json({ message: 'Profile setup complete!', user });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.put('/api/profile/password', async (req, res) => {
-    try {
-        const { userId, currentPasskey, newPasskey } = req.body;
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        if (user.passkey !== currentPasskey) {
-            return res.status(401).json({ error: 'Current passkey is incorrect' });
-        }
-
-        user.passkey = newPasskey;
-        await user.save();
-        res.json({ message: 'Passkey updated successfully' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+// (Moved to Profile section near Login for better organization)
 
 app.delete('/api/team/:id', authMiddleware, async (req, res) => {
     try {
@@ -397,6 +389,7 @@ app.get('/api/organizations', authMiddleware, async (req, res) => {
 
 app.post('/api/organizations', authMiddleware, async (req, res) => {
     try {
+        if (req.user.role !== 'super_lead' && req.user.role !== 'lead') return res.status(403).json({ error: 'Unauthorized' });
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
         const newOrg = new Organization({ name });
@@ -407,6 +400,7 @@ app.post('/api/organizations', authMiddleware, async (req, res) => {
 
 app.put('/api/organizations/:id', authMiddleware, async (req, res) => {
     try {
+        if (req.user.role !== 'super_lead' && req.user.role !== 'lead') return res.status(403).json({ error: 'Unauthorized' });
         const { name } = req.body;
         const updated = await Organization.findByIdAndUpdate(req.params.id, { name }, { returnDocument: 'after' });
         res.json(updated);
@@ -415,6 +409,7 @@ app.put('/api/organizations/:id', authMiddleware, async (req, res) => {
 
 app.delete('/api/organizations/:id', authMiddleware, async (req, res) => {
     try {
+        if (req.user.role !== 'super_lead' && req.user.role !== 'lead') return res.status(403).json({ error: 'Unauthorized' });
         await Organization.findByIdAndDelete(req.params.id);
         res.json({ message: 'Deleted' });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -475,15 +470,17 @@ app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
 // 8. Videos API (Multiple Featured Videos)
 app.get('/api/videos', async (req, res) => {
     try {
-        const videos = await Video.find().sort({ priority: 1, createdAt: -1 }); // Priority 1 first, then newest
+        const videos = await Video.find().sort({ priority: 1, createdAt: -1 });
         res.json(videos);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/videos', async (req, res) => {
+app.post('/api/videos', authMiddleware, async (req, res) => {
     try {
+        if (req.user.role !== 'super_lead' && req.user.role !== 'lead') {
+            const user = await User.findById(req.user.id);
+            if (!user.permissions?.canManageVideos) return res.status(403).json({ error: 'Unauthorized' });
+        }
         const { title, youtubeUrl, priority } = req.body;
 
         let videoId = youtubeUrl;
@@ -510,13 +507,15 @@ app.post('/api/videos', async (req, res) => {
     }
 });
 
-app.delete('/api/videos/:id', async (req, res) => {
+app.delete('/api/videos/:id', authMiddleware, async (req, res) => {
     try {
+        if (req.user.role !== 'super_lead' && req.user.role !== 'lead') {
+            const user = await User.findById(req.user.id);
+            if (!user.permissions?.canManageVideos) return res.status(403).json({ error: 'Unauthorized' });
+        }
         await Video.findByIdAndDelete(req.params.id);
         res.json({ message: 'Video deleted' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // 6. Events
@@ -555,18 +554,19 @@ app.delete('/api/events/:id', authMiddleware, async (req, res) => {
 // 7. Top Rated
 app.get('/api/toprated', async (req, res) => {
     try {
-        const items = await TopRated.find().sort({ createdAt: -1 }).limit(10); // Show newest 10
+        const items = await TopRated.find().sort({ createdAt: -1 }).limit(10);
         res.json(items);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.post('/api/toprated', authMiddleware, async (req, res) => {
     try {
+        if (req.user.role !== 'super_lead' && req.user.role !== 'lead') {
+            const user = await User.findById(req.user.id);
+            if (!user.permissions?.canManageTopRated) return res.status(403).json({ error: 'Unauthorized' });
+        }
         const { tag, url, highlight } = req.body;
 
-        // --- 1. Auto-Scrape the Metadata from the URL ---
         let title = "Featured Content";
         let description = "Check out this link.";
         let imageUrl = "";
@@ -574,45 +574,40 @@ app.post('/api/toprated', authMiddleware, async (req, res) => {
         try {
             const { body: html, url: finalUrl } = await got(url);
             const metadata = await metascraper({ html, url: finalUrl });
-
             title = metadata.title || title;
             description = metadata.description || description;
             imageUrl = metadata.image || "";
-
-            // Twitter specific fallback since Twitter often blocks scrapers without API keys
-            if (url.includes('twitter.com') || url.includes('x.com')) {
-                if (title === "Featured Content") title = "Featured Tweet";
-            }
-        } catch (scrapeErr) {
-            console.error("Scraping failed for URL, using fallback:", url, scrapeErr.message);
-        }
+        } catch (scrapeErr) { console.error("Scraping failed:", scrapeErr.message); }
 
         const newItem = new TopRated({ tag, url, title, description, imageUrl, highlight });
         await newItem.save();
         res.status(201).json(newItem);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.put('/api/toprated/:id', authMiddleware, async (req, res) => {
     try {
+        if (req.user.role !== 'super_lead' && req.user.role !== 'lead') {
+            const user = await User.findById(req.user.id);
+            if (!user.permissions?.canManageTopRated) return res.status(403).json({ error: 'Unauthorized' });
+        }
         const { tag, url, highlight } = req.body;
 
         let title = "Featured Content";
         let description = "Check out this link.";
         let imageUrl = "";
 
-        // Scrape new metadata if the URL was updated
         try {
             const { body: html, url: finalUrl } = await got(url);
             const metadata = await metascraper({ html, url: finalUrl });
             title = metadata.title || title;
             description = metadata.description || description;
             imageUrl = metadata.image || "";
-        } catch (scrapeErr) {
-            console.error("Scraping failed for URL during update, using fallback:", url, scrapeErr.message);
-        }
+
+            if (url.includes('twitter.com') || url.includes('x.com')) {
+                if (title === "Featured Content") title = "Featured Tweet";
+            }
+        } catch (scrapeErr) { console.error("Scraping failed during update:", scrapeErr.message); }
 
         const updated = await TopRated.findByIdAndUpdate(
             req.params.id,
@@ -620,18 +615,18 @@ app.put('/api/toprated/:id', authMiddleware, async (req, res) => {
             { returnDocument: 'after' }
         );
         res.json(updated);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.delete('/api/toprated/:id', authMiddleware, async (req, res) => {
     try {
+        if (req.user.role !== 'super_lead' && req.user.role !== 'lead') {
+            const user = await User.findById(req.user.id);
+            if (!user.permissions?.canManageTopRated) return res.status(403).json({ error: 'Unauthorized' });
+        }
         await TopRated.findByIdAndDelete(req.params.id);
         res.json({ message: 'Item deleted' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Start Server
