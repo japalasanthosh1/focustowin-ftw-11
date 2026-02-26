@@ -809,8 +809,8 @@ select option {
     color: #fff;
 }
 
-/* Button Override for Form */
-.join-form button {
+/* Button Override for Form - Only target the main action buttons */
+.join-form button:not(.toggle-pass) {
     grid-column: span 2;
     justify-self: center;
     margin-top: 20px;
