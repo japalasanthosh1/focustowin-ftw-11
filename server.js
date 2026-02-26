@@ -4,7 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { User, Application, Event, Video, TopRated } = require('./models');
+const { User, Application, Event, Video, TopRated, Announcement, Task } = require('./models');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ftw_super_secret_key_2026';
 
@@ -407,8 +407,8 @@ app.get('/api/tasks', authMiddleware, async (req, res) => {
 
 app.post('/api/tasks', authMiddleware, async (req, res) => {
     try {
-        const { title, description, assignedTo, dueDate } = req.body;
-        const newTask = new Task({ title, description, assignedTo, dueDate });
+        const { title, description, assignedTo, dueDate, priority } = req.body;
+        const newTask = new Task({ title, description, assignedTo, dueDate, priority });
         await newTask.save();
         res.status(201).json(newTask);
     } catch (err) {

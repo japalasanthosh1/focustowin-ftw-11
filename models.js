@@ -62,6 +62,7 @@ const taskSchema = new mongoose.Schema({
     description: { type: String },
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
+    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
     dueDate: { type: Date }
 }, { timestamps: true });
 
@@ -112,4 +113,4 @@ const topRatedSchema = new mongoose.Schema({
 
 const TopRated = mongoose.model('TopRated', topRatedSchema);
 
-module.exports = { User, Application, Event, Video, TopRated };
+module.exports = { User, Application, Event, Video, TopRated, Announcement, Task };
