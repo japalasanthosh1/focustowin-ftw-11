@@ -549,11 +549,8 @@
             <li id="nav-videos"><a href="#" class="nav-item" onclick="switchTab('videos')"><i class="fas fa-video"></i>
                     Video
                     Manager</a></li>
-            <li id="nav-team"><a href="#" class="nav-item" onclick="switchTab('team')"><i class="fas fa-users"></i> Team
-                    Workspace</a>
-            </li>
-            <li id="nav-setup"><a href="#" class="nav-item" onclick="switchTab('setup')"><i class="fas fa-cogs"></i>
-                    Team Setup</a>
+            <li id="nav-tasks"><a href="#" class="nav-item" onclick="switchTab('tasks')"><i class="fas fa-tasks"></i>
+                    Tasks</a>
             </li>
             <li id="nav-profile"><a href="#" class="nav-item" onclick="switchTab('profile')"><i
                         class="fas fa-user-circle"></i> My Profile</a>
@@ -836,168 +833,7 @@
             </div>
         </div>
 
-        <!-- TAB: TEAM SETUP -->
-        <div id="tab-setup" class="admin-tab">
-            <header class="page-header">
-                <div>
-                    <h1>Team Setup</h1>
-                    <p>Manage organizations and invite new members to the ecosystem.</p>
-                </div>
-            </header>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-                <!-- Manage Colleges -->
-                <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Manage College Names</h2>
-                    <form id="addCollegeForm" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <input type="text" id="newCollegeName" placeholder="New College Name" required
-                            style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                        <button type="submit" class="cta-button">Add</button>
-                    </form>
-                    <div id="collegesList" style="display: flex; flex-direction: column; gap: 10px;">
-                        <!-- Colleges injected here -->
-                    </div>
-                </div>
-
-                <!-- Add Team Member Form -->
-                <div class="data-section">
-                    <h2 style="margin-bottom: 20px;">Invite Team Member</h2>
-                    <form id="addTeamForm" style="display: flex; flex-direction: column; gap: 15px;">
-                        <input type="text" id="teamName" placeholder="Full Name" required
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-
-                        <div style="display: flex; flex-direction: column; gap: 5px;">
-                            <label style="color: var(--text-secondary); font-size: 0.85rem;">Role</label>
-                            <select id="teamRole" required onchange="handleRoleChange()"
-                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                                <option value="coordinator">Coordinator</option>
-                                <option value="college_lead">College Level Lead</option>
-                                <option value="core_lead">Core Lead</option>
-                                <option value="lead">Lead</option>
-                                <option value="super_lead">Super Lead</option>
-                            </select>
-                        </div>
-
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text" id="teamUserId" placeholder="Unique Team ID" required
-                                style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                            <button type="button" id="autoIdBtn" onclick="autoFetchTeamId()"
-                                style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;">Auto-Gen</button>
-                        </div>
-
-                        <input type="text" id="teamPasskey" placeholder="Initial Passkey" required
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-
-                        <select id="teamOrg" required
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                            <option value="">Select College/Org...</option>
-                        </select>
-
-                        <button type="submit" class="cta-button">Invite to Team</button>
-                        <div id="teamMsg" style="text-align: center; min-height: 20px; font-weight: bold;">
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB: TEAM WORKSPACE -->
-        <div id="tab-team" class="admin-tab">
-            <header class="page-header">
-                <div>
-                    <h1>Team Workspace</h1>
-                    <p>Hierarchical view of your ecosystem members.</p>
-                </div>
-            </header>
-
-            <div style="display: flex; flex-direction: column; gap: 40px;">
-                <div class="data-section" style="padding: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
-                        <h2 style="margin: 0; white-space: nowrap;">Team Directory</h2>
-                        <div style="position: relative; flex: 1; max-width: 400px;">
-                            <input type="text" id="memberSearch" placeholder="Search by name or ID..."
-                                oninput="filterTeam()"
-                                style="padding: 10px 20px 10px 40px; border-radius: 30px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 100%;">
-                            <span
-                                style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); opacity: 0.5;">🔍</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="teamHierarchyContainer">
-                    <!-- Strict hierarchy injected here -->
-                </div>
-
-                <!-- Section 2: Task Board -->
-                <div class="data-section">
-                    <div class="section-header">
-                        <h2>Internal Task Board</h2>
-                        <button class="cta-button" onclick="openTaskModal()"
-                            style="padding: 8px 16px; border-radius: 8px;">+
-                            Assign New Task</button>
-                    </div>
-
-                    <div id="taskBoardContainer"
-                        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                        <!-- Three Columns: To Do, In Progress, Done -->
-                        <div class="task-column">
-                            <h3
-                                style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px; text-transform: uppercase;">
-                                To Do</h3>
-                            <div id="tasks-pending" style="display: flex; flex-direction: column; gap: 10px;"></div>
-                        </div>
-                        <div class="task-column">
-                            <h3
-                                style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px; text-transform: uppercase;">
-                                In Progress</h3>
-                            <div id="tasks-in-progress" style="display: flex; flex-direction: column; gap: 10px;">
-                            </div>
-                        </div>
-                        <div class="task-column">
-                            <h3
-                                style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px; text-transform: uppercase;">
-                                Completed</h3>
-                            <div id="tasks-completed" style="display: flex; flex-direction: column; gap: 10px;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Task Assignment Modal -->
-            <div id="taskModal" class="modal"
-                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
-                <div class="data-section" style="width: 500px;">
-                    <h2 style="margin-bottom: 20px;">Assign New Task</h2>
-                    <form id="assignTaskForm" style="display: flex; flex-direction: column; gap: 15px;">
-                        <input type="text" id="taskTitle" placeholder="Task Title" required
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                        <textarea id="taskDesc" placeholder="Description..." required
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;"></textarea>
-                        <select id="taskAssignedTo" required
-                            style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                            <option value="">Select Member...</option>
-                        </select>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <input type="date" id="taskDueDate"
-                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; color-scheme: dark;">
-                            <select id="taskPriority" required
-                                style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff;">
-                                <option value="low">Low Priority</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High Priority</option>
-                            </select>
-                        </div>
-
-                        <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <button type="submit" class="cta-button" style="flex: 1;">Assign Task</button>
-                            <button type="button" onclick="closeTaskModal()"
-                                style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- TAB: MY PROFILE -->
         <div id="tab-profile" class="admin-tab">
@@ -1089,10 +925,8 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                         <input type="text" id="onboardPhone" placeholder="Personal Phone" required
                             style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
-                        <select id="onboardOrg" required
+                        <input type="text" id="onboardOrg" placeholder="Your Organization / College" required
                             style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff;">
-                            <option value="">Select Your College...</option>
-                        </select>
                     </div>
                     <input type="text" id="onboardSkills" placeholder="Top Skills (e.g. Design, JS, Engineering)"
                         required
@@ -1298,24 +1132,9 @@
             if (!p.canManageEvents) document.getElementById('nav-events').style.display = 'none';
             if (!p.canManageTopRated) document.getElementById('nav-toprated').style.display = 'none';
             if (!p.canManageVideos) document.getElementById('nav-videos').style.display = 'none';
-            if (!p.canManageTeam) document.getElementById('nav-team').style.display = 'none';
-
-            // Setup Tab - Restricted to Super Lead and Lead
-            if (role !== 'super_lead' && role !== 'lead') {
-                document.getElementById('nav-setup').style.display = 'none';
-            }
 
             // Content Visibility (Actions)
             // Note: Since some content is loaded dynamically, we call this after data fetches too.
-            if (!p.canManageTeam) {
-                // Hide "Invite Member" group in any tab
-                const inviteSections = document.querySelectorAll('.data-section h2');
-                inviteSections.forEach(h2 => {
-                    if (h2.innerText.includes('Invite New Member')) {
-                        h2.closest('.data-section').style.display = 'none';
-                    }
-                });
-            }
 
             if (!p.canApproveApps) {
                 // If they can't approve, we hide the action column or buttons in Overview
@@ -1677,94 +1496,13 @@
             }
         }
 
-        async function loadSetupTab() {
-            await loadOrganizations();
-        }
 
-        async function loadOrganizations() {
-            try {
-                const res = await fetchWithAuth('/api/organizations');
-                const orgs = await res.json();
-
-                const list = document.getElementById('collegesList');
-                list.innerHTML = '';
-
-                const inviteSelect = document.getElementById('teamOrg');
-                const editSelect = document.getElementById('editOrg');
-                const onboardSelect = document.getElementById('onboardOrg');
-
-                inviteSelect.innerHTML = '<option value="">Select College/Org...</option>';
-                editSelect.innerHTML = '<option value="">Select College/Org...</option>';
-                if (onboardSelect) onboardSelect.innerHTML = '<option value="">Select Your College...</option>';
-
-                orgs.forEach(o => {
-                    // Update list
-                    const item = document.createElement('div');
-                    item.style.display = 'flex';
-                    item.style.justifyContent = 'space-between';
-                    item.style.alignItems = 'center';
-                    item.style.padding = '10px';
-                    item.style.background = 'rgba(255,255,255,0.05)';
-                    item.style.borderRadius = '6px';
-                    item.innerHTML = `
-                        <span>${o.name}</span>
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="editOrganization('${o._id}', '${o.name}')" style="background: transparent; color: var(--accent-color); border: none; cursor: pointer;"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteOrganization('${o._id}')" style="background: transparent; color: #ff3333; border: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                    list.appendChild(item);
-
-                    // Update dropdowns
-                    const opt = `<option value="${o.name}">${o.name}</option>`;
-                    inviteSelect.innerHTML += opt;
-                    editSelect.innerHTML += opt;
-                    if (onboardSelect) onboardSelect.innerHTML += opt;
-                });
-            } catch (err) { console.error(err); }
-        }
-
-        document.getElementById('addCollegeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('newCollegeName').value;
-            try {
-                await fetchWithAuth('/api/organizations', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name })
-                });
-                document.getElementById('newCollegeName').value = '';
-                loadOrganizations();
-            } catch (err) { console.error(err); }
-        });
-
-        async function editOrganization(id, oldName) {
-            const newName = await showCustomPrompt('Enter new name for college:', oldName);
-            if (!newName || newName === oldName) return;
-            try {
-                await fetchWithAuth(`/api/organizations/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: newName })
-                });
-                loadOrganizations();
-            } catch (err) { console.error(err); }
-        }
-
-        async function deleteOrganization(id) {
-            if (!await showCustomConfirm('Delete this college?')) return;
-            try {
-                await fetchWithAuth(`/api/organizations/${id}`, { method: 'DELETE' });
-                loadOrganizations();
-            } catch (err) { console.error(err); }
-        }
 
         // Initialize Magnetic physics for dashboard buttons
         document.addEventListener('DOMContentLoaded', () => {
             // initMagneticButtons(); // Temporarily disabled or missing
             console.log('DOM Content Loaded - Initializing Dashboard');
             fetchDashboardData(); // Call immediately on load
-            loadOrganizations(); // Ensure dropdowns (including onboarding) are populated
             loadAnnouncements();
             checkOnboarding();
             applyRBAC(); // Curate UI based on role/permissions
@@ -2297,203 +2035,16 @@
             }
         }
 
-        async function deleteTeamMember(id) {
-            if (!await showCustomConfirm('Are you sure you want to remove this team member?')) return;
-            try {
-                await fetchWithAuth(`/api/team/${id}`, { method: 'DELETE' });
-                loadTeamTab();
-            } catch (err) { console.error(err); }
-        }
+
 
         function logout() {
             sessionStorage.clear();
             window.location.href = 'login.html';
         }
 
-        // --- Member Profile Editing Logic ---
-        async function openMemberProfile(id) {
-            try {
-                const res = await fetchWithAuth(`/api/team/${id}`);
-                const user = await res.json();
 
-                document.getElementById('editMemberId').value = user._id;
-                document.getElementById('modalMemberName').innerText = `Profile: ${user.name}`;
-                document.getElementById('editName').value = user.name;
-                document.getElementById('editTeamIdVal').value = user.teamId;
-                document.getElementById('editOrg').value = user.organization;
-                document.getElementById('editRole').value = user.role;
-                document.getElementById('editIsActive').value = user.isActive.toString();
-                document.getElementById('editPasskeyView').value = user.rawPasskey || 'Not Set';
-                document.getElementById('editPhone').value = user.phone || '';
-                document.getElementById('editLinkedin').value = (user.socialLinks && user.socialLinks.linkedin) || '';
-                document.getElementById('editGithub').value = (user.socialLinks && user.socialLinks.github) || '';
-                document.getElementById('editBio').value = user.bio || '';
-                document.getElementById('editSkills').value = user.skills ? user.skills.join(', ') : '';
-
-                // Permissions
-                document.getElementById('permVideos').checked = user.permissions.canManageVideos;
-                document.getElementById('permEvents').checked = user.permissions.canManageEvents;
-                document.getElementById('permTrending').checked = user.permissions.canManageTopRated;
-                document.getElementById('permApps').checked = user.permissions.canApproveApps;
-                document.getElementById('permTeam').checked = user.permissions.canManageTeam;
-
-                document.getElementById('memberProfileModal').style.display = 'flex';
-            } catch (err) { console.error('Error loading member profile:', err); }
-        }
-
-        function closeMemberProfileModal() {
-            document.getElementById('memberProfileModal').style.display = 'none';
-        }
-
-        async function saveMemberProfile(e) {
-            e.preventDefault();
-            const id = document.getElementById('editMemberId').value;
-            const payload = {
-                name: document.getElementById('editName').value,
-                teamId: document.getElementById('editTeamIdVal').value,
-                organization: document.getElementById('editOrg').value,
-                role: document.getElementById('editRole').value,
-                isActive: document.getElementById('editIsActive').value === 'true',
-                phone: document.getElementById('editPhone').value,
-                socialLinks: {
-                    linkedin: document.getElementById('editLinkedin').value,
-                    github: document.getElementById('editGithub').value
-                },
-                bio: document.getElementById('editBio').value,
-                skills: document.getElementById('editSkills').value.split(',').map(s => s.trim()).filter(s => s !== ''),
-                permissions: {
-                    canManageVideos: document.getElementById('permVideos').checked,
-                    canManageEvents: document.getElementById('permEvents').checked,
-                    canManageTopRated: document.getElementById('permTrending').checked,
-                    canApproveApps: document.getElementById('permApps').checked,
-                    canManageTeam: document.getElementById('permTeam').checked
-                }
-            };
-
-            try {
-                const res = await fetchWithAuth(`/api/team/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    await showCustomAlert('Member profile updated successfully!');
-                    closeMemberProfileModal();
-                    loadTeamTab();
-                } else {
-                    const err = await res.json();
-                    await showCustomAlert(`Error: ${err.error}`);
-                }
-            } catch (err) { console.error('Error saving member profile:', err); }
-        }
-
-        async function copyPasskey() {
-            const input = document.getElementById('editPasskeyView');
-            input.select();
-            document.execCommand('copy');
-            await showCustomAlert('Passkey copied to clipboard!');
-        }
     </script>
-    <!-- MEMBER PROFILE MODAL -->
-    <div id="memberProfileModal" class="modal"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
-        <div class="data-section" style="width: 800px; max-height: 90vh; overflow-y: auto;">
-            <div class="section-header">
-                <h2 id="modalMemberName">Member Profile</h2>
-                <button class="cta-button" onclick="closeMemberProfileModal()"
-                    style="background: transparent; border: 1px solid rgba(255,255,255,0.2); padding: 5px 10px;">Close</button>
-            </div>
 
-            <form id="memberProfileForm" onsubmit="saveMemberProfile(event)">
-                <input type="hidden" id="editMemberId">
-                <div class="profile-grid">
-                    <!-- Left Column: Identity & Contact -->
-                    <div>
-                        <div class="profile-section-title">Identity & Role</div>
-                        <div class="profile-field-group">
-                            <label>Full Name</label>
-                            <input type="text" id="editName" required>
-                        </div>
-                        <div class="profile-field-group">
-                            <label>Team ID</label>
-                            <input type="text" id="editTeamIdVal" required>
-                        </div>
-                        <div class="profile-field-group">
-                            <label>Organization</label>
-                            <select id="editOrg"></select>
-                        </div>
-                        <div class="profile-field-group">
-                            <label>Role</label>
-                            <select id="editRole">
-                                <option value="coordinator">Coordinator</option>
-                                <option value="college_lead">College Level Lead</option>
-                                <option value="core_lead">Core Lead</option>
-                                <option value="lead">Lead</option>
-                                <option value="super_lead">Super Lead</option>
-                            </select>
-                        </div>
-                        <div class="profile-field-group">
-                            <label>Status</label>
-                            <select id="editIsActive">
-                                <option value="true">Active</option>
-                                <option value="false">Locked</option>
-                            </select>
-                        </div>
-                        <div class="profile-field-group" id="passkeyDisplayGroup">
-                            <label>Current Passkey (Realtime)</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="editPasskeyView" readonly
-                                    style="flex: 1; background: rgba(255,255,255,0.05);">
-                                <button type="button" onclick="copyPasskey()" class="cta-button"
-                                    style="padding: 5px 10px; font-size: 0.8rem;">Copy</button>
-                            </div>
-                        </div>
-
-                        <div class="profile-section-title" style="margin-top: 30px;">Contact & Social</div>
-                        <div class="profile-field-group">
-                            <label>Phone</label>
-                            <input type="text" id="editPhone">
-                        </div>
-                        <div class="profile-field-group">
-                            <label>LinkedIn URL</label>
-                            <input type="text" id="editLinkedin">
-                        </div>
-                        <div class="profile-field-group">
-                            <label>GitHub Username</label>
-                            <input type="text" id="editGithub">
-                        </div>
-                    </div>
-
-                    <!-- Right Column: Bio, Skills, Permissions -->
-                    <div>
-                        <div class="profile-section-title">Professional Bio</div>
-                        <div class="profile-field-group">
-                            <textarea id="editBio" rows="4" placeholder="Tell us more about this member..."></textarea>
-                        </div>
-                        <div class="profile-field-group">
-                            <label>Skills (comma separated)</label>
-                            <input type="text" id="editSkills">
-                        </div>
-
-                        <div class="profile-section-title" style="margin-top: 30px;">Access Permissions</div>
-                        <div class="permissions-grid">
-                            <label><input type="checkbox" id="permVideos"> Manage Videos</label>
-                            <label><input type="checkbox" id="permEvents"> Manage Events</label>
-                            <label><input type="checkbox" id="permTrending"> Manage Trending</label>
-                            <label><input type="checkbox" id="permApps"> Approve Applications</label>
-                            <label><input type="checkbox" id="permTeam"> Manage Team</label>
-                        </div>
-
-                        <div style="margin-top: 40px; display: flex; gap: 15px;">
-                            <button type="submit" class="cta-button" style="flex: 2;">Save Profile Changes</button>
-                            <button type="button" onclick="closeMemberProfileModal()"
-                                style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
     <!-- CUSTOM DIALOG SYSTEM -->
     <div id="customDialogOverlay">
         <div class="custom-dialog" id="dialogBox">

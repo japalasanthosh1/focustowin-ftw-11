@@ -113,6 +113,5 @@ const topRatedSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const TopRated = mongoose.model('TopRated', topRatedSchema);
-const Organization = mongoose.model('Organization', new mongoose.Schema({ name: String }, { timestamps: true }));
 
-module.exports = { User, Application, Event, Video, TopRated, Announcement, Task, Organization };
+module.exports = { User, Application, Event, Video, TopRated, Announcement, Task };
