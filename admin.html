@@ -2193,11 +2193,11 @@
             } catch (err) { console.error('Error saving member profile:', err); }
         }
 
-        function copyPasskey() {
+        async function copyPasskey() {
             const input = document.getElementById('editPasskeyView');
             input.select();
             document.execCommand('copy');
-            showCustomAlert('Passkey copied to clipboard!');
+            await showCustomAlert('Passkey copied to clipboard!');
         }
     </script>
     <!-- MEMBER PROFILE MODAL -->
